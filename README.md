@@ -1,6 +1,6 @@
-# Apocalypter Weapons Pack
+# Apocalypter Weapons Pack 1.6.1
 
-![Apocalypter Weapons Pack](cover.png)
+![Apocalypter Weapons Pack](docs/images/header.png)
 
 
 Adds a gasoline-powered chainsaw and a refillable flamethrower with their own models, inventory images, Codex entries, fuel tanks and saved item identities.
@@ -38,9 +38,16 @@ Damage, range, fuel cost and attack rate are adjustable. Flamethrower settings a
 
 ## Release changes
 
+1.6.1 fixes inactive merchant request metadata and restores Apocasetter's standard scaled settings and detail tabs. The specific Apocapocket save-start failure has been reproduced and regression-tested; full gameplay and 4K checks are still outstanding. See [testing](docs/TESTING.md).
+
+
 1.6.0 removes the spawn testing controls and new test-site creation, sets flamethrower world rarity to 25%, adds Slumtown merchant stock, and uses the branded runtime folder. Saves made with old test sites retain the minimum geometry restoration needed to support their saved items. Existing holding profiles, authored chainsaw animations, fuel settings and stock M16 assets are retained.
 
 The download contains runtime files and required profiles. Personal backups, source, editors, diagnostic captures, caches and debug symbols are excluded.
 
 
 Download the installable ZIP from this repository's Releases page.
+
+## Source and development
+
+The public source builds the chainsaw and flamethrower. See [building](docs/BUILDING.md), [testing](docs/TESTING.md), [publishing](docs/PUBLISHING.md), [folder layout](docs/LAYOUT.md), and [credits](CREDITS.md). Unreleased local weapon work is kept outside this repository.

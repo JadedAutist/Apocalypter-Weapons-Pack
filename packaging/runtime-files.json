@@ -1,0 +1,105 @@
+{
+  "version": "1.6.1",
+  "assets": [
+    {
+      "path": "Chainsaw-icon.png",
+      "sha256": "3AAE5E3CE9873DB08C202432DE659082CABDC25C568787FA15D11777AE6F99C3"
+    },
+    {
+      "path": "ChainSaw_Clean.png",
+      "sha256": "61477BA184D1C61B310AC35C236A3F595A75FBD741648F847F51C68B07AB4183"
+    },
+    {
+      "path": "ChainsawCodex.png",
+      "sha256": "D710FBE65F4F20D4490B8AE22730646630FBB2C5A8F2962E86B5153F657CD7C1"
+    },
+    {
+      "path": "ChainsawIdle.json",
+      "sha256": "566444520652BD0C858D6A347BDA8F9AFD20D54CEAE6126EF75CA403E455C1AE"
+    },
+    {
+      "path": "ChainsawPlacement.json",
+      "sha256": "A79C0BF7E95D35876DF86FEDEF91A0D5970408B202A9B45DD97BA66F971CC041"
+    },
+    {
+      "path": "Defaults/ApocalypterWeaponsPack/chainsaw-reference-holding.cfg",
+      "sha256": "3EED8205B64CF05E04ABE657EE59491835AEFE0217AF296720E522BAF6F98DC0"
+    },
+    {
+      "path": "Defaults/HandArmPlacement/flamethrower.cfg",
+      "sha256": "02C1350C17CB2EC3C1036C9432526259803DAE9A895A309827C338BD7E0D5494"
+    },
+    {
+      "path": "Defaults/WeaponMovesets/chainsaw--downwardswing.json",
+      "sha256": "F4E345198883AC89056F7AC7B85ACA6AD07AE10E841039BA59CE0EBEC37B996C"
+    },
+    {
+      "path": "Defaults/WeaponMovesets/chainsaw--upperleftdiagonalchop.json",
+      "sha256": "D2AAA9BAC84037F6500B01BE8AF94917CBB28B5E078ADBFC9A3BED76010A391E"
+    },
+    {
+      "path": "Flamethrower/Codex.png",
+      "sha256": "5889F77A859EA456DF15A58FCB4899D97D299D2D70782596C79BCC5D1F962ABD"
+    },
+    {
+      "path": "Flamethrower/icon.png",
+      "sha256": "9F5C2C102782660BBA627E7A3EF563EB37F1E8772A9D36C3297BE6159EA96643"
+    },
+    {
+      "path": "Flamethrower/metal_rusted_16.png",
+      "sha256": "77DE6BB30BC264D09EDC20D0BF8B87C033A0350FE0E96CF404CB644E63C5EDFE"
+    },
+    {
+      "path": "Flamethrower/metal_rusted_19.png",
+      "sha256": "8391197436FC0EFEAB9A7E2AE98D9DF132E835B06A6ADB2B6D4CCE84AD7E0EA7"
+    },
+    {
+      "path": "Flamethrower/NativeEffects/FirePuff.png",
+      "sha256": "0ECAEC2FC94F2DCD193741C0180EFC97D230F6E31D11E436B71ECC26CB31FBF8"
+    },
+    {
+      "path": "Flamethrower/NativeEffects/Flame1.png",
+      "sha256": "9CB3E19193A0F47E098CD697B5EFDA94A65B7F224013C0BA55CB64DC7DF1DE52"
+    },
+    {
+      "path": "Flamethrower/NativeEffects/FlamethrowerIgnition.wav",
+      "sha256": "9A18C1C24C04BB83B6A9EEC8D643217FD6E6CE2F5E6A8B5CBDE8FE2400E89AAC"
+    },
+    {
+      "path": "Flamethrower/NativeEffects/FlamethrowerJetLoop.wav",
+      "sha256": "65627D9E7C7CCB0771A113784916A5304AEE0ED1B68CB2B5F055765ABDF174B1"
+    },
+    {
+      "path": "Flamethrower/NativeEffects/Scorch.png",
+      "sha256": "98315E8D198135258D55000AE10A52067F1096ABE16FE473E0B2FB74B800E998"
+    },
+    {
+      "path": "Flamethrower/NativeEffects/SFX_FireSmall_L.wav",
+      "sha256": "B6B3372BB86BEC3124C62D95414402B32C3BE24B155646246F16C401D7A53E36"
+    },
+    {
+      "path": "Flamethrower/NativeEffects/StoveActivationClick.wav",
+      "sha256": "05E59F20D47BE202951BB35A841BB5DF0CC4A454AFD28C8A54D7A42937A9C52D"
+    },
+    {
+      "path": "Flamethrower/NativeEffects/StoveBurnerLoop.wav",
+      "sha256": "CC5D00D6D84DCF0B4009C9A0FC960E4D0C2B28DD18E1B0A5E44790EF50BCDDC5"
+    },
+    {
+      "path": "Flamethrower/Vlammewerper.obj",
+      "sha256": "F05AFDE55A4E84E8BBA49F9CC6EE4406526F66798F98D8E5D1446074EED00043"
+    },
+    {
+      "path": "Flamethrower/Vlammewerperdoos.obj",
+      "sha256": "1672138693184BE6C8343EC0B28C1D2A5CFCAEB4E4337E9D12D311A1BD6045DD"
+    },
+    {
+      "path": "WeaponFeedback/EmptyFlameSputter.wav",
+      "sha256": "9435231D4C54DA720C5EB44BDFD8F652DDC810620ABA96DDECF3C8E73CE19176"
+    },
+    {
+      "path": "WeaponFeedback/EmptySawStarter.wav",
+      "sha256": "4B0FC704AF0AA433900B2353270090EB0BFB82150D8356110A89C0F7E279A558"
+    }
+  ]
+}
