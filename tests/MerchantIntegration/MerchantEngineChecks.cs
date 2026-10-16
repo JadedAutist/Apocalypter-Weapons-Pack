@@ -33,6 +33,7 @@ public sealed class MerchantEngineChecks:BaseUnityPlugin {
   foreach(var boot in Resources.FindObjectsOfTypeAll<PlayMakerFSM>())if(boot.gameObject.scene.IsValid()&&boot.Fsm==null)UnityEngine.Object.DestroyImmediate(boot);
   var pack=Assembly.LoadFrom(Path.Combine(root,"lib",variant,"ChainsawPrototype.dll"));var plugin=pack.GetType("ChainsawPrototype.Plugin");
   var go=new GameObject("InactivePack");go.SetActive(false);var owner=go.AddComponent(plugin);
+  if(variant=="fixed")CheckWeaponSettings(owner);
   var parent=new GameObject("WeaponsPack.MerchantRequestData");parent.SetActive(false);
   bool creationFailed=false;GameObject chainsaw=null,flame=null;
   try{chainsaw=(GameObject)Call(owner,"MakeMerchantRequest","Chainsaw",parent.transform);flame=(GameObject)Call(owner,"MakeMerchantRequest","Flamethrower",parent.transform);}
@@ -73,5 +74,54 @@ public sealed class MerchantEngineChecks:BaseUnityPlugin {
    var json=(string)Get(persistence,"_json");Check((bool)Call(pocket.GetType("Apocapocket.Persistence"),"WriteMapping",file,json),"actual pocket mapping write verifies");
    Check(ES3.Load<int>("FixtureSentinel",disk)==42&&ES3.Load<string>("Apocapocket.Slots",disk)==json,"pocket mapping and prior save key coexist");
   }
+ }
+ void CheckWeaponSettings(Component owner){
+  var config=((BaseUnityPlugin)owner).Config;config.Clear();config.Save();
+  config.Bind("General","Apocasetter",true);
+  Call(owner,"SetupCombat");Call(owner,"SetupCuttingAttack");Call(owner,"SetupFlameFuelBalance");
+  bool spear=owner.GetType().GetMethod("SetupWoodenSpearCombat",All)!=null;
+  if(spear){Call(owner,"SetupWoodenSpearCombat");Call(owner,"SetupSpearThrow");}
+  var gasoline=config.Bind("Flamethrower - Gasoline","Range",5f);
+  var diesel=config.Bind("Flamethrower - Diesel","Range",7f);
+  var rate=config.Bind("Combat","Attack rate",.8f);
+  var fuel=config.Bind("Combat","Fuel per swing",.1f);
+  Check((float)gasoline.DefaultValue==5f&&(float)diesel.DefaultValue==7f&&(float)config.Bind("Flamethrower - Engine oil","Range",10f).DefaultValue==10f,"compiled flamethrower range defaults are exactly 5/7/10");
+  Check((float)rate.DefaultValue==.8f&&(float)config.Bind("Combat","Reach",1.8f).DefaultValue==1.8f,"readable chainsaw defaults retain fractional reach and rate");
+  File.WriteAllLines(Path.Combine(root,"balance-defaults-"+(spear?"development":"release")+".tsv"),config.Select(p=>p.Value).OfType<ConfigEntry<float>>().Select(e=>e.Definition.Section+"\t"+e.Definition.Key+"\t"+((float)e.DefaultValue).ToString(System.Globalization.CultureInfo.InvariantCulture)).ToArray());
+  gasoline.Value=5.003649f;diesel.Value=7.00365f;rate.Value=1f/1.2f;
+  var presentation=(ConfigEntry<float>)Get(owner,"sawVolume");presentation.Value=.1234567f;
+  Call(owner,"TrimWeaponSettings");
+  Check(gasoline.Value==5f&&diesel.Value==7f&&rate.Value==.8f,"old saved settings round on startup");
+  var entries=config.Select(p=>p.Value).OfType<ConfigEntry<float>>().ToArray();
+  Check(entries.Length==(spear?24:19),"all weapon balance settings covered");
+  foreach(var entry in entries){
+   Check((float)Math.Round((decimal)(float)entry.DefaultValue,1,MidpointRounding.AwayFromZero)==(float)entry.DefaultValue,"clean default: "+entry.Definition);
+  }
+  Check(presentation.Value==.1234567f,"authored/private presentation precision retained");
+  Call(owner,"TrimWeaponSettings"); // Reinitializing must not multiply callbacks.
+  gasoline.Value=4.3f;Check(gasoline.Value==4.3f,"intentional one-decimal range retained");
+  gasoline.Value=4.34546434f;Check(gasoline.Value==4.3f,"live range rounds down");
+  gasoline.Value=4.36f;Check(gasoline.Value==4.4f,"live range rounds up");
+  rate.Value=.8333333f;Check(rate.Value==.8f,"live fractional attack rate stays readable");
+  fuel.Value=.1234567f;Check(fuel.Value==.1f,"fuel rounds to tenths");
+  fuel.Value=.26f;Check(fuel.Value==.3f,"fuel rounds up in tenths");
+  fuel.Value=.36f;Check(fuel.Value==.4f,"fuel advances to next tenth");
+  fuel.Value=.01f;Check(fuel.Value==.1f,"minimum fuel cost is one nonzero tenth");
+  if(spear){var reach=config.Bind("Wooden Spear","Hit reach",1.8f);reach.Value=2.34567f;Check(reach.Value==2.3f,"local spear uses same precision policy");}
+  Check(config.Bind("General","Apocasetter",true).Value,"Apocasetter metadata retained");
+  config.Save();var reloaded=new ConfigFile(config.ConfigFilePath,false);
+  Check(reloaded.Bind("Flamethrower - Gasoline","Range",5f).Value==4.4f&&reloaded.Bind("Combat","Fuel per swing",.1f).Value==.1f,"rounded settings survive native config save/reload");
+  // Both weapons use this actual production tank component. Balance rounding
+  // must never quantize its liquid or strand a final partial frame of fuel.
+  var tank=Fsm("LiquidAmount");var liquid=new FsmFloat{Value=.05f};liquid.SetName("Liquid");tank.FsmVariables.FloatVariables=new[]{liquid};tank.FsmVariables.Reinitialize();
+  var physical=tank.gameObject.AddComponent(owner.GetType().Assembly.GetType("ChainsawPrototype.ChainsawFuel"));
+  Set(physical,"tank",tank);Set(physical,"liquid",liquid);
+  float spent=(float)Call(physical,"ConsumeContinuous",.0067f);
+  Check(Mathf.Abs(spent-.0067f)<.0000001f&&Mathf.Abs(liquid.Value-.0433f)<.0000001f,"partial tank drains below a settings step without rounding");
+  spent=(float)Call(physical,"ConsumeContinuous",.1f);
+  Check(Mathf.Abs(spent-.0433f)<.0000001f&&liquid.Value==0f,"final partial tank empties exactly to zero");
+  liquid.Value=.000001f;spent=(float)Call(physical,"ConsumeContinuous",.00001f);
+  Check(spent==.000001f&&liquid.Value==0f,"even a tiny positive remainder can be consumed");
+  Check((float)Call(physical,"ConsumeContinuous",.1f)==0f&&liquid.Value==0f,"empty tank stays zero without negative fuel");
  }
 }

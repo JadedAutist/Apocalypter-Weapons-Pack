@@ -1,6 +1,6 @@
 # Apocalypter Weapons Pack 1.6.1
 
-
+![Apocalypter Weapons Pack](docs/images/header.png)
 
 
 Adds a gasoline-powered chainsaw and a refillable flamethrower with their own models, inventory images, Codex entries, fuel tanks and saved item identities.
@@ -9,7 +9,7 @@ Adds a gasoline-powered chainsaw and a refillable flamethrower with their own mo
 
 Requires BepInEx 5 for the game. Close Apocalypter, then extract this archive into the game folder so that `BepInEx/plugins/Apocalypter Weapons Pack` contains the DLL and its asset folders.
 
-When updating an older prototype installation, remove `BepInEx/plugins/ChainsawPrototype` first. Keep your existing `BepInEx/config` files. The internal DLL/assembly name remains `ChainsawPrototype.dll` for compatibility; the installed mod folder is Apocalypter Weapons Pack.
+Keep your existing `BepInEx/config` files when updating. Install only one copy of Apocalypter Weapons Pack.
 
 The pack includes its holding and attack profiles. It installs them only when their corresponding config files are missing. The placement adjuster, animation editor and Inspector are optional separate mods. Apocasetter is optional for the in-game settings panel; without it, edit `BepInEx/config/apocalypter.weaponspack.cfg` while the game is closed.
 
@@ -35,6 +35,8 @@ The flame stream arcs down slightly and can damage several enemies across its wi
 ## Settings
 
 Damage, range, fuel cost and attack rate are adjustable. Flamethrower settings are separate for each fuel. Fuel consumption per second equals fuel cost per attack multiplied by attack rate. Flame damage per second stays independent of attack rate. Spawn chances and visual settings are fixed in this release.
+
+Player-facing balance settings use one decimal place, including fuel costs (0.1/0.2/0.3 L; minimum 0.1 L). Actual tank contents and continuous draining retain full precision. Existing saved values and new edits round to that precision. Flamethrower range defaults are exactly 5 m for gasoline, 7 m for diesel and 10 m for engine oil; chainsaw LMB defaults to 0.8 swings per second. Authored holding and animation profiles are unaffected.
 
 ## Release changes
 
