@@ -1,0 +1,12 @@
+* text=auto
+.gitattributes text eol=lf
+.gitignore text eol=lf
+*.cs text eol=lf
+*.csproj text eol=lf
+*.ps1 text eol=lf
+*.md text eol=lf
+*.json text eol=lf
+*.png binary
+*.wav binary
+# Preserve bundled profiles and model data exactly as distributed.
+assets/runtime/** -text -whitespace
