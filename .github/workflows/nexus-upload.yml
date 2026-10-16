@@ -73,4 +73,5 @@ jobs:
         if: inputs.publish && success()
         env:
           VERSION_ID: ${{ steps.nexus.outputs.version_id }}
-        run: printf 'Published Nexus file version: %s\n' "$VERSION_ID" >> "$GITHUB_STEP_SUMMARY"
+        run: |
+          printf 'Published Nexus file version: %s\n' "$VERSION_ID" >> "$GITHUB_STEP_SUMMARY"
