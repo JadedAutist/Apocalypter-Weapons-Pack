@@ -1,0 +1,22 @@
+# Build products, local tools and integration-test saves
+**/bin/
+**/obj/
+/artifacts/
+/dist/
+*.dll
+*.pdb
+*.zip
+*.es3
+*.log
+*.user
+*.suo
+GameDir.user.props
+.vs/
+.idea/
+# Private author workspace items never belong in this release repository
+/Recovery/
+/staging/
+/BepInEx/
+/Releases/
+Thumbs.db
+desktop.ini
