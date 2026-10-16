@@ -26,6 +26,7 @@ The original DLL must match its known SHA-256. The original merchant exception l
 - Repeat saving after visiting a merchant and after swapping weapons. Confirm the saving indicator completes and input returns.
 - Quit normally, check for shutdown errors, restart and load the test save. Verify relevant companion mod features and weapon state still work.
 - Compare behavior with Apocapocket/Apocasetter enabled and disabled when investigating a compatibility report. Capture versions, exact steps and logs.
+- Equip, attack with and switch between both weapons with Apocaplayer/WildWasteland present and absent, and with the placement adjuster enabled and disabled. Check frame timing and repeated missing-type warnings; optional integrations must remain cheap when their mod is absent.
 - Investigate the first unexpected exception or error prompt, including failures reported by another mod. Fix or document the cause and rerun affected workflows; do not treat later cascading errors as independent proof of another mod's fault. Label deliberate negative-control failures separately.
 
 The isolated save-path and metadata checks pass. Full gameplay, inventory restoration, merchant payment and visual resolution checks remain outstanding until recorded by a tester. Do not treat absence of log errors as proof of compatibility.
@@ -35,3 +36,21 @@ The isolated save-path and metadata checks pass. Full gameplay, inventory restor
 For each candidate, record the version/commit, ZIP SHA-256, game and mod versions, test date, tester and display resolution/scaling. For each workflow above, record Pass, Fail or Not tested, with reproduction steps and supporting logs or prompt captures. Keep expected negative-control output separate. Recheck affected workflows after the final change. If game control is unavailable, provide the user with specific steps and leave the result Not tested until they report back.
 
 Summarize automated results, live results, unresolved errors and missing checks before asking for a release decision. Do not claim full compatibility or release readiness while required checks remain unperformed or unexpected errors remain unexplained. Preserve the distinction even if the author chooses to publish for testing.
+
+## Optional body-mod lookup regression, 2026-10-16 (local candidate)
+
+The published 1.6.1 DLL repeatedly called Harmony's fallback type search when Apocaplayer was absent. In an isolated native Unity process, 100 calls to its actual third-person check took 1356.087 ms and produced repeated missing-type warnings. The fixed public DLL performed 10,000 checks in 0.414 ms; the fixed local development DLL took 0.427 ms. These are method timings, not whole-game FPS measurements.
+
+Both candidates passed 16 native checks covering absent-mod behavior, cached misses, loading the real Apocaplayer and WildWasteland assemblies after a miss, and all combinations of the actual third-person flags. Companion plugins were not started. The existing 11 factory checks, release identity/asset audit and 53 Unity/PlayMaker/Apocapocket fixture checks also passed. Full companion gameplay, live weapon frame timing and save/load remain pending. Published ZIPs were not replaced.
+
+Reproduce after building using `scripts/test-optional-integrations.ps1 -GameDir <game> -PlayerBodyDll <Apocaplayer.dll> -WildWastelandDll <WildWasteland.dll>`. Optional `-BaselineZip` runs the old DLL as an explicitly labeled slow/log-spam negative control; `-DevelopmentDll` checks the separate local build too. Reports and logs stay in `artifacts/optional-integration-host`, with owned fixture objects and no personal save opened.
+
+Live follow-up, 2026-10-16: the author confirmed that the fix worked after installing the local development Weapons Pack DLL and fixed placement adjuster. The reported severe weapon lag is resolved in that setup. Companion versions/state and individual workflows were not specified. The public packaged build, complete optional-mod matrix, save/load and editor preview controls still require their own live checks; published downloads are unchanged.
+
+## 1.6.2 publication verification, 2026-10-16
+
+The author requested publication of the Weapons Pack fix and explicitly excluded the adjuster from publication. The public two-weapon build was versioned 1.6.2. Installable ZIP SHA-256: `23B9603C98725F5B9F7692B9A55F3834D4E682A438D1DD594823303C96F18473`; packaged DLL SHA-256: `F11381F5C658A7686E53C9B6CCFE8D14790409A6AB209075CC07ADA585D6A228`.
+
+The DLL extracted from that exact ZIP passed all 16 native optional-integration checks (10,000 absent-mod view checks in 0.411 ms). The 53 Unity/PlayMaker/Apocapocket fixture checks, 11 merchant factory checks, version/identity audit, runtime asset hashes and four Nexus preflight test methods passed. The existing source serialization-field compiler warnings were unchanged. The current local gameplay log showed Wild Wasteland 0.1.28 and no Error/Fatal/exception or repeated missing-Apocaplayer warnings in the inspected log; this is supporting evidence, not a complete live compatibility check.
+
+The user-confirmed live performance result applies to the local development build with both local fixes. The exact public ZIP has not had the full live startup/settings/merchant/inventory/save/reload/4K checklist rerun. These outstanding checks are disclosed in the release notes. No adjuster DLL, development weapon, personal settings or debug tools are included in the installable package.

@@ -1,4 +1,4 @@
-# Apocalypter Weapons Pack 1.6.1
+# Apocalypter Weapons Pack 1.6.2
 
 ![Apocalypter Weapons Pack](docs/images/header.png)
 
@@ -39,6 +39,8 @@ Damage, range, fuel cost and attack rate are adjustable. Flamethrower settings a
 Player-facing balance settings use one decimal place, including fuel costs (0.1/0.2/0.3 L; minimum 0.1 L). Actual tank contents and continuous draining retain full precision. Existing saved values and new edits round to that precision. Flamethrower range defaults are exactly 5 m for gasoline, 7 m for diesel and 10 m for engine oil; chainsaw LMB defaults to 0.8 swings per second. Authored holding and animation profiles are unaffected.
 
 ## Release changes
+
+1.6.2 fixes severe weapon lag when the optional player-body mod is absent. Optional integration lookups now remember missing types instead of repeatedly scanning loaded assemblies during weapon updates. Companion assemblies loaded later are still detected. Settings, fuel behavior, saved identities and holding profiles are unchanged.
 
 1.6.1 fixes inactive merchant request metadata and restores Apocasetter's standard scaled settings and detail tabs. The specific Apocapocket save-start failure has been reproduced and regression-tested; full gameplay and 4K checks are still outstanding. See [testing](docs/TESTING.md).
 

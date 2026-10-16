@@ -1,5 +1,9 @@
 # Changes
 
+## 1.6.2
+
+- Cache missing optional player-body types so equipping a weapon without Apocaplayer does not repeatedly scan every loaded type or flood the log. Late-loaded companion assemblies remain detectable. The author confirmed the local lag fix; native regression checks cover absent and late-loaded companion types.
+
 ## 1.6.1
 
 - Restore Apocasetter's native settings rendering, scaling, search and detail tabs.

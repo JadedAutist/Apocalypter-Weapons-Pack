@@ -25,14 +25,14 @@ namespace ChainsawPrototype {
     }
    }
   }
-  void InstallBodyHook(){if(bodyHook)return;var type=AccessTools.TypeByName("Apocaplayer.Body");if(type==null)return;var method=AccessTools.Method(type,"LateFoot");if(method==null)return;harmony.Patch(method,postfix:new HarmonyMethod(typeof(Plugin),nameof(AfterBodyPose)));bodyHook=true;Logger.LogInfo("Third person Chainsaw prop hook installed.");}
+  void InstallBodyHook(){if(bodyHook)return;var type=OptionalWeaponTypes.Find("Apocaplayer.Body");if(type==null)return;var method=AccessTools.Method(type,"LateFoot");if(method==null)return;harmony.Patch(method,postfix:new HarmonyMethod(typeof(Plugin),nameof(AfterBodyPose)));bodyHook=true;Logger.LogInfo("Third person Chainsaw prop hook installed.");}
   static void AfterBodyPose(object __instance,object[] __args){if(ReferenceEquals(instance,null)||!instance.IsPlayerBody(__instance))return;if(instance.activeFlame!=null)instance.UpdateFlameBody(__instance);if(!instance.enabledPreview&&!instance.samplingThirdPerson){instance.lastBody=__instance;return;}instance.UpdateThirdPerson(__instance,__args);}
   void HideThirdPerson(){if(thirdModel!=null)thirdModel.SetActive(false);if(suppressedProp!=null)suppressedProp.SetActive(true);suppressedProp=null;}
   MonoBehaviour playerBodyRunner;System.Reflection.FieldInfo playerBodyField;float nextPlayerBodyScan;
   bool IsPlayerBody(object body){
    if(playerBodyRunner==null){
     if(Time.unscaledTime<nextPlayerBodyScan)return false;nextPlayerBodyScan=Time.unscaledTime+1f;
-    var runnerType=AccessTools.TypeByName("Apocaplayer.Runner");if(runnerType==null)return false;
+    var runnerType=OptionalWeaponTypes.Find("Apocaplayer.Runner");if(runnerType==null)return false;
     playerBodyRunner=Resources.FindObjectsOfTypeAll<MonoBehaviour>().FirstOrDefault(m=>m.GetType()==runnerType&&m.gameObject.scene.IsValid());playerBodyField=AccessTools.Field(runnerType,"_body");
    }
    return playerBodyRunner!=null && playerBodyField!=null && ReferenceEquals(playerBodyField.GetValue(playerBodyRunner),body);
@@ -41,7 +41,7 @@ namespace ChainsawPrototype {
   void RestoreBodyArms(){if(borrowedBodyArms!=null)borrowedBodyArms.enabled=borrowedBodyArmsEnabled;borrowedBodyArms=null;}
   System.Reflection.FieldInfo thirdPersonOn,thirdPersonHasView;bool resolvedViewFields;
   bool ActualThirdPersonActive(){
-   if(!resolvedViewFields){var type=AccessTools.TypeByName("Apocaplayer.ThirdPerson");if(type!=null){thirdPersonOn=AccessTools.Field(type,"On");thirdPersonHasView=AccessTools.Field(type,"HasView");resolvedViewFields=true;}}
+   if(!resolvedViewFields){var type=OptionalWeaponTypes.Find("Apocaplayer.ThirdPerson");if(type!=null){thirdPersonOn=AccessTools.Field(type,"On");thirdPersonHasView=AccessTools.Field(type,"HasView");resolvedViewFields=true;}}
    return thirdPersonOn!=null && (bool)thirdPersonOn.GetValue(null) && (thirdPersonHasView==null || (bool)thirdPersonHasView.GetValue(null));
   }
   object lastBody;bool samplingThirdPerson,playerThirdPerson;
