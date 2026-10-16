@@ -20,3 +20,5 @@ GameDir.user.props
 /Releases/
 Thumbs.db
 desktop.ini
+__pycache__/
+*.py[cod]

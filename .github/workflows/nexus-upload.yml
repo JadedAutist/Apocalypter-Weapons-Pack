@@ -1,0 +1,76 @@
+name: Nexus upload
+
+on:
+  workflow_dispatch:
+    inputs:
+      release_tag:
+        description: Published GitHub release tag
+        required: true
+        type: string
+      expected_sha256:
+        description: SHA-256 of the approved installable ZIP
+        required: true
+        type: string
+      file_id:
+        description: Nexus File ID (optional for access checks; required to publish)
+        required: false
+        type: string
+      publish:
+        description: Publish to Nexus (leave off to check access only)
+        default: false
+        type: boolean
+      archive_previous:
+        description: Archive the previous Nexus download when publishing
+        default: true
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nexus-weapons-pack-upload
+  cancel-in-progress: false
+
+jobs:
+  upload:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - name: Read the publishing tools
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Verify the package and Nexus connection
+        id: check
+        env:
+          GH_TOKEN: ${{ github.token }}
+          NEXUSMODS_API_KEY: ${{ secrets.NEXUSMODS_API_KEY }}
+          NEXUS_FILE_ID: ${{ inputs.file_id || vars.NEXUSMODS_FILE_ID }}
+          RELEASE_TAG: ${{ inputs.release_tag }}
+          EXPECTED_SHA256: ${{ inputs.expected_sha256 }}
+          PUBLISH_TO_NEXUS: ${{ inputs.publish }}
+        run: python3 scripts/nexus-release-check.py
+      - name: Publish the verified ZIP to Nexus
+        if: inputs.publish
+        id: nexus
+        uses: Nexus-Mods/upload-action@98532f7670c27cbecc78fae03fa3e278147827e2 # v1.0.0-beta.11
+        with:
+          api_key: ${{ secrets.NEXUSMODS_API_KEY }}
+          file_id: ${{ steps.check.outputs.file_id }}
+          filename: ${{ steps.check.outputs.filename }}
+          version: ${{ steps.check.outputs.version }}
+          display_name: Apocalypter Weapons Pack
+          description: ${{ steps.check.outputs.notes }}
+          category: main
+          archive_existing_version: ${{ inputs.archive_previous }}
+          primary_mod_manager_download: true
+          allow_mod_manager_download: true
+          update_mod_version: true
+          mod_id: ${{ steps.check.outputs.mod_id }}
+          changelog: ${{ steps.check.outputs.notes }}
+      - name: Record upload result
+        if: inputs.publish && success()
+        env:
+          VERSION_ID: ${{ steps.nexus.outputs.version_id }}
+        run: printf 'Published Nexus file version: %s\n' "$VERSION_ID" >> "$GITHUB_STEP_SUMMARY"
