@@ -16,7 +16,7 @@ namespace ChainsawPrototype {
    cuttingBlendTime=FixedSetting("Chainsaw cutting","Lean transition",.18f);
    cuttingDamagePerHit=Config.Bind("Chainsaw cutting","Damage per hit",20f,new ConfigDescription("Damage for each right-click sawing contact. Independent of left-click swing damage.",new AcceptableValueRange<float>(.1f,100f)));
    cuttingAttackRate=Config.Bind("Chainsaw cutting","Attack rate",6f,new ConfigDescription("Right-click sawing attacks per second. Each attack pays Fuel per attack and deals Damage per hit on contact.",new AcceptableValueRange<float>(.5f,20f)));
-   cuttingFuelPerAttack=Config.Bind("Chainsaw cutting","Fuel per attack",.10f,new ConfigDescription("Litres used for each right-click sawing attack, including misses. Fuel use per second is this value multiplied by Attack rate.",new AcceptableValueRange<float>(.01f,.5f)));
+   cuttingFuelPerAttack=Config.Bind("Chainsaw cutting","Fuel per attack",.10f,new ConfigDescription("Litres used for each right-click sawing attack, including misses. Fuel use per second is this value multiplied by Attack rate.",new AcceptableValueRange<float>(.1f,.5f)));
    cuttingTilt=FixedSetting("Chainsaw cutting","Blade forward tilt",8f);
   }
 
