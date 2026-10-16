@@ -1,6 +1,6 @@
 # Apocalypter Weapons Pack 1.6.1
 
-![Apocalypter Weapons Pack]
+
 
 
 Adds a gasoline-powered chainsaw and a refillable flamethrower with their own models, inventory images, Codex entries, fuel tanks and saved item identities.
