@@ -44,10 +44,10 @@ class NexusPreflightTests(unittest.TestCase):
             if url.endswith('/games/apocalypter/mods/68'):
                 return {'data': {'id': 'mod-guid', 'name': 'Apocalypter Weapons Pack'}}
             if url.endswith('/mods/mod-guid/files'):
-                return {'data': {'mod_files': [{'id': 'file-guid', 'name': 'Main', 'is_active': True}]}}
+                return {'data': {'mod_files': [{'id': 'file-guid', 'name': 'Main', 'is_active': True}, {'id': '8164890', 'name': 'Numeric modern ID', 'is_active': True}]}}
             if url.endswith('/games/apocalypter/mod-file-versions/123'):
                 return {'data': {'file': {'id': 'file-guid'}}}
-            if url.endswith('/mod-files/file-guid/versions'):
+            if url.endswith('/mod-files/file-guid/versions') or url.endswith('/mod-files/8164890/versions'):
                 return {'data': {'versions': [{'version': '1.6.1'}]}}
             self.fail('Unexpected endpoint: ' + url)
         report = check.nexus_target('test-secret', '', False, '1.6.1', get)
@@ -56,6 +56,7 @@ class NexusPreflightTests(unittest.TestCase):
         self.assertNotIn('key', report)
         self.assertFalse(report['published'])
         self.assertEqual(check.nexus_target('test-secret', '123', False, '1.6.1', get)['file_id'], 'file-guid')
+        self.assertEqual(check.nexus_target('test-secret', '8164890', False, '1.6.1', get)['file_id'], '8164890')
         for file_id, version in (('', '1.6.2'), ('wrong-mod-file', '1.6.2'), ('file-guid', '1.6.1')):
             with self.subTest(file_id=file_id), self.assertRaises(ValueError):
                 check.nexus_target('test-secret', file_id, True, version, get)

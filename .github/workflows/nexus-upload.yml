@@ -60,7 +60,7 @@ jobs:
           file_id: ${{ steps.check.outputs.file_id }}
           filename: ${{ steps.check.outputs.filename }}
           version: ${{ steps.check.outputs.version }}
-          display_name: Apocalypter Weapons Pack
+          display_name: Apocalypter Weapons Pack ${{ steps.check.outputs.version }}
           description: ${{ steps.check.outputs.notes }}
           category: main
           archive_existing_version: ${{ inputs.archive_previous }}

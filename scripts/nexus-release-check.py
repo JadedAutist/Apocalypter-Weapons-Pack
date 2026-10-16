@@ -82,10 +82,13 @@ def nexus_target(api_key, requested_id, publish, version, get=read_json):
     target = requested_id.strip()
     if target and not re.fullmatch(r'[A-Za-z0-9-]{1,80}', target):
         raise ValueError('Invalid Nexus File ID.')
-    if target.isdecimal():
+    allowed_ids = {str(item['id']) for item in files}
+    # Modern persistent File IDs can also be numeric. Resolve an old
+    # game-scoped download ID only if it is not already one of this page's IDs.
+    if target.isdecimal() and target not in allowed_ids:
         legacy = get(base + '/games/apocalypter/mod-file-versions/' + target, headers)['data']
         target = str(legacy['file']['id'])
-    if target and target not in {str(item['id']) for item in files}:
+    if target and target not in allowed_ids:
         raise ValueError('File ID does not belong to this mod page.')
     if publish and not target:
         raise ValueError('A File ID from the access-check report is required before publishing.')
@@ -99,6 +102,7 @@ def nexus_target(api_key, requested_id, publish, version, get=read_json):
         'mod_id': mod_id, 'file_id': target, 'published': False,
         'files': [{key: item.get(key) for key in ('id', 'name', 'is_active')} for item in files],
         'existing_versions': [item['version'] for item in versions],
+        'version_details': [{key: item.get(key) for key in ('id', 'version', 'game_scoped_id', 'name', 'category')} for item in versions],
     }
     return report
 
