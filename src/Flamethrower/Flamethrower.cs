@@ -89,6 +89,7 @@ namespace ChainsawPrototype {
   void TickFlamethrower(){
    if(enabledPreview){if(activeFlame!=null)StopFlamethrower();return;}
    if(flamePlayer==null){flamePlayer=GameObject.Find("PlayerCamera");flameHeldFsm=flamePlayer==null?null:flamePlayer.GetComponentsInChildren<PlayMakerFSM>(true).FirstOrDefault(f=>f.FsmName=="WeaponInHand");}
+   if(flamePlayer!=null&&!CanPresentHeldWeapon(flamePlayer.transform)){if(activeFlame!=null)StopFlamethrower();return;}
    var selected=flameHeldFsm==null?null:flameHeldFsm.FsmVariables.FindFsmGameObject("Item")??flameHeldFsm.FsmVariables.FindFsmGameObject("item");
    var held=selected==null||selected.Value==null?null:selected.Value.GetComponent<FlamethrowerItem>();
    if(held!=null&&(!held.Equipped||!held.gameObject.activeInHierarchy))held=null;

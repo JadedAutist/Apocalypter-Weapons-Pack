@@ -2,6 +2,11 @@
 
 ## 1.6.2
 
+- Use shared time-based holding sway so running does not accelerate the added weapon bob; sample once per rendered frame.
+- Hide private weapon rigs when native weapon visibility or player health/death forbids them, including in late pose/render callbacks. Stop owned firing and shake on teardown.
+- Preserve authored holding profiles and attack data. Native fixture checks pass; the author confirmed the local sway/death fixes.
+
+
 - Cache missing optional player-body types so equipping a weapon without Apocaplayer does not repeatedly scan every loaded type or flood the log. Late-loaded companion assemblies remain detectable. The author confirmed the local lag fix; native regression checks cover absent and late-loaded companion types.
 
 ## 1.6.1

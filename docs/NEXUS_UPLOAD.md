@@ -22,4 +22,6 @@ After normal gameplay/integration checks, run again with the intended File ID an
 
 A successful verification run proves authentication and read access to the intended page and file. Actual upload permission is established when a real authorized upload succeeds. Do not claim a new download was published unless the upload step reports success and the Nexus file version has been checked. If a publish fails partway, inspect the page before retrying: uploading and adding a changelog are separate API operations.
 
+For an explicitly author-approved correction that keeps the same version number, supply `replace_version_id` with the exact current main version ID from a fresh verification report and keep Archive previous enabled. The preflight permits replacement only when that ID is the latest main download and its version matches the release. The superseded download is archived. The original ID is no longer main afterward, so a retry with it is rejected. Leave this input blank for ordinary new versions; duplicate versions remain blocked by default.
+
 Documentation: https://github.com/Nexus-Mods/upload-action

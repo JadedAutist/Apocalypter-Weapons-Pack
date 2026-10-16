@@ -5,6 +5,7 @@ namespace ChainsawPrototype {
   SkinnedMeshRenderer[] HeldArmRenderers(){if(renderRig!=weapon||renderArms==null){renderRig=weapon;renderArms=weapon.GetComponentsInChildren<SkinnedMeshRenderer>(true);}return renderArms;}
   void ProtectChainsawRender(Camera rendering){
    if(!enabledPreview||camera==null||preview==null||weapon==null||rendering.targetTexture!=null||rendering!=camera.GetComponent<Camera>())return;
+   if(!CanPresentHeldWeapon(camera)){StopPreview();return;}
    bool visible=!ActualThirdPersonActive();
    preview.SetActive(true);var model=preview.GetComponent<MeshRenderer>();model.enabled=visible;model.allowOcclusionWhenDynamic=false;preview.layer=0;
    weapon.gameObject.SetActive(true);

@@ -23,6 +23,10 @@ on:
         description: Archive the previous Nexus download when publishing
         default: true
         type: boolean
+      replace_version_id:
+        description: Exact current Nexus version ID for an explicitly approved same-version replacement; normally leave blank
+        required: false
+        type: string
 
 permissions:
   contents: read
@@ -50,6 +54,8 @@ jobs:
           RELEASE_TAG: ${{ inputs.release_tag }}
           EXPECTED_SHA256: ${{ inputs.expected_sha256 }}
           PUBLISH_TO_NEXUS: ${{ inputs.publish }}
+          REPLACE_VERSION_ID: ${{ inputs.replace_version_id }}
+          ARCHIVE_PREVIOUS: ${{ inputs.archive_previous }}
         run: python3 scripts/nexus-release-check.py
       - name: Publish the verified ZIP to Nexus
         if: inputs.publish

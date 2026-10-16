@@ -66,7 +66,7 @@ def check_zip(path, expected):
     return actual
 
 
-def nexus_target(api_key, requested_id, publish, version, get=read_json):
+def nexus_target(api_key, requested_id, publish, version, get=read_json, replace_version_id=''):
     if not api_key:
         raise ValueError('Add the GitHub Actions secret NEXUSMODS_API_KEY first.')
     headers = {'apikey': api_key, 'Accept': 'application/json', 'User-Agent': 'Apocalypter-Weapons-Pack'}
@@ -95,14 +95,24 @@ def nexus_target(api_key, requested_id, publish, version, get=read_json):
     versions = []
     if target:
         versions = get(base + '/mod-files/' + urllib.parse.quote(target, safe='') + '/versions', headers)['data']['versions']
-        if publish and any(item['version'] == version for item in versions):
-            raise ValueError('This version already exists on Nexus. Do not upload a duplicate.')
+        if publish:
+            matching = [item for item in versions if item['version'] == version]
+            if replace_version_id:
+                # An explicit author-approved same-version correction must name
+                # the exact current main version. After success it is archived,
+                # so repeating the same request cannot publish another copy.
+                active = [item for item in versions if item.get('category') == 'main']
+                if not matching or len(active) != 1 or str(active[0].get('id')) != replace_version_id or active[0]['version'] != version or str(versions[0].get('id')) != replace_version_id:
+                    raise ValueError('Replacement must identify the exact latest main version with the same version number.')
+            elif matching:
+                raise ValueError('This version already exists on Nexus. Do not upload a duplicate.')
     report = {
         'account': 'JadedAutist', 'mod_page': 'https://www.nexusmods.com/apocalypter/mods/68',
         'mod_id': mod_id, 'file_id': target, 'published': False,
         'files': [{key: item.get(key) for key in ('id', 'name', 'is_active')} for item in files],
         'existing_versions': [item['version'] for item in versions],
-        'version_details': [{key: item.get(key) for key in ('id', 'version', 'game_scoped_id', 'name', 'category')} for item in versions],
+        'version_details': [{key: item.get(key) for key in ('id', 'version', 'game_scoped_id', 'name', 'category', 'is_primary', 'uploaded_at')} for item in versions],
+        'replacement_of': replace_version_id or None,
     }
     return report
 
@@ -149,7 +159,12 @@ def main():
             target.write(chunk)
     actual = check_zip(destination, expected)
     publish = os.environ.get('PUBLISH_TO_NEXUS', '').lower() == 'true'
-    report = nexus_target(os.environ.get('NEXUSMODS_API_KEY', ''), os.environ.get('NEXUS_FILE_ID', ''), publish, version)
+    replacement = os.environ.get('REPLACE_VERSION_ID', '').strip()
+    if replacement and not re.fullmatch(r'[A-Za-z0-9-]{1,80}', replacement):
+        raise ValueError('Invalid replacement version ID.')
+    if publish and replacement and os.environ.get('ARCHIVE_PREVIOUS', '').lower() != 'true':
+        raise ValueError('Same-version replacement requires archiving the previous download.')
+    report = nexus_target(os.environ.get('NEXUSMODS_API_KEY', ''), os.environ.get('NEXUS_FILE_ID', ''), publish, version, replace_version_id=replacement)
     report.update(version=version, sha256=actual, mode='publish preflight' if publish else 'read-only verification')
     print('NEXUS_CHECK_JSON=' + json.dumps(report))
     if os.environ.get('GITHUB_STEP_SUMMARY'):

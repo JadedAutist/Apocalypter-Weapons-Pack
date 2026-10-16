@@ -5,6 +5,8 @@ $manifest=Get-Content -LiteralPath (Join-Path $repo 'packaging/runtime-files.jso
 $dll=Join-Path $repo 'artifacts/runtime/BepInEx/plugins/Apocalypter Weapons Pack/ChainsawPrototype.dll'
 & dotnet run --project (Join-Path $repo 'tests/MerchantFactory/FactoryTests.csproj') -c Release -v quiet
 if($LASTEXITCODE -ne 0){throw 'Merchant factory checks failed.'}
+& dotnet run --project (Join-Path $repo 'tests/HoldingMotion/MotionTests.csproj') -c Release -v quiet
+if($LASTEXITCODE -ne 0){throw 'Weapon holding motion checks failed.'}
 & dotnet run --project (Join-Path $repo 'tests/ReleaseAudit/ReleaseAudit.csproj') -c Release -v quiet -- $dll $manifest.version
 if($LASTEXITCODE -ne 0){throw 'Release binary checks failed.'}
 foreach($asset in $manifest.assets){

@@ -40,7 +40,7 @@ Player-facing balance settings use one decimal place, including fuel costs (0.1/
 
 ## Release changes
 
-1.6.2 fixes severe weapon lag when the optional player-body mod is absent. Optional integration lookups now remember missing types instead of repeatedly scanning loaded assemblies during weapon updates. Companion assemblies loaded later are still detected. Settings, fuel behavior, saved identities and holding profiles are unchanged.
+1.6.2 fixes severe weapon lag when the optional player-body mod is absent, steadies running sway and hides custom held weapons correctly on death. Optional integration lookups now remember missing types instead of repeatedly scanning loaded assemblies during weapon updates. Companion assemblies loaded later are still detected. Settings, fuel behavior, saved identities and holding profiles are unchanged.
 
 1.6.1 fixes inactive merchant request metadata and restores Apocasetter's standard scaled settings and detail tabs. The specific Apocapocket save-start failure has been reproduced and regression-tested; full gameplay and 4K checks are still outstanding. See [testing](docs/TESTING.md).
 

@@ -48,16 +48,16 @@ namespace ChainsawPrototype {
   KeyValuePair<Transform,StockBone>[] flamePlacementBones,flamePlacementModels;
   Vector3 flamePlacementPivot;
   bool flamePlacementReported;
-  Transform flameSwayParent;
-  Vector3 flameSwayBasePosition,flameSwayPosition;
-  Quaternion flameSwayBaseRotation=Quaternion.identity,flameSwayRotation=Quaternion.identity;
+  readonly WeaponHoldingMotion flameHoldingMotion=new WeaponHoldingMotion();
+  Vector3 flamePreviousViewPosition,flameSwayPosition;
+  Quaternion flamePreviousViewRotation=Quaternion.identity,flameSwayRotation=Quaternion.identity;
   bool flameSwayReady;
   int flameSwayFrame=-1;
 
   internal void ReportFlamethrowerHoldingError(Exception error){Logger.LogError("Flamethrower holding failure: "+error);}
 
   void ResetFlamePlacementBinding(){flamePlacementRig=null;flamePlacementBones=null;flamePlacementModels=null;flamePlacementReported=false;}
-  void ResetFlamethrowerHolding(){ResetFlamePlacementBinding();flameSwayParent=null;flameSwayReady=false;flameSwayFrame=-1;flameSwayPosition=Vector3.zero;flameSwayRotation=Quaternion.identity;ResetFlamethrowerAim();}
+  void ResetFlamethrowerHolding(){ResetFlamePlacementBinding();flameHoldingMotion.Reset();flameSwayReady=false;flameSwayFrame=-1;flameSwayPosition=Vector3.zero;flameSwayRotation=Quaternion.identity;ResetFlamethrowerAim();}
 
   void ReadFlamethrowerHolding(){
    if(Time.unscaledTime<nextFlamePlacementRead)return;
@@ -129,25 +129,22 @@ namespace ChainsawPrototype {
    // They must not advance the smoothing twice in the same rendered frame.
    if(flameSwayFrame==Time.frameCount)return;
    flameSwayFrame=Time.frameCount;
-   if(!flameSwayReady){
-    flameSwayParent=flameCarrier==null?null:flameCarrier.parent;
-    if(flameSwayParent==null)return;
-    flameSwayBasePosition=view.InverseTransformPoint(flameSwayParent.position);flameSwayBaseRotation=Quaternion.Inverse(view.rotation)*flameSwayParent.rotation;
-    flameSwayPosition=Vector3.zero;flameSwayRotation=Quaternion.identity;flameSwayReady=true;
+   bool usable=Time.timeScale>0f&&!Cursor.visible&&Cursor.lockState==CursorLockMode.Locked&&!ActualThirdPersonActive();
+   if(!flameSwayReady||!usable){
+    flamePreviousViewPosition=view.position;flamePreviousViewRotation=view.rotation;
+    flameHoldingMotion.Reset();flameSwayPosition=Vector3.zero;flameSwayRotation=Quaternion.identity;flameSwayReady=usable;return;
    }
-   if(flameSwayParent==null||Time.timeScale<=0f)return;
-   var rawShift=view.InverseTransformPoint(flameSwayParent.position)-flameSwayBasePosition;
-   var rawRotation=(Quaternion.Inverse(view.rotation)*flameSwayParent.rotation)*Quaternion.Inverse(flameSwayBaseRotation);
-   if(!Finite(rawShift)||!Finite(rawRotation)){flameSwayPosition=Vector3.zero;flameSwayRotation=Quaternion.identity;return;}
-   float angle;Vector3 axis;rawRotation.ToAngleAxis(out angle,out axis);if(angle>180f)angle-=360f;
-   rawRotation=Finite(axis)&&Finite(angle)&&axis.sqrMagnitude>.000001f&&Mathf.Abs(angle)>.00001f?Quaternion.AngleAxis(Mathf.Clamp(angle,-10f,10f),axis):Quaternion.identity;
-   float blend=1f-Mathf.Exp(-14f*Mathf.Min(Time.deltaTime,.1f));
-   if(!Finite(flameSwayPosition)||!Finite(flameSwayRotation)){flameSwayPosition=Vector3.zero;flameSwayRotation=Quaternion.identity;}
-   flameSwayPosition=Vector3.Lerp(flameSwayPosition,Vector3.ClampMagnitude(rawShift,.06f),blend);flameSwayRotation=Quaternion.Slerp(flameSwayRotation,rawRotation,blend);
+   var travel=view.position-flamePreviousViewPosition;
+   var look=(Quaternion.Inverse(flamePreviousViewRotation)*view.rotation).eulerAngles;
+   flamePreviousViewPosition=view.position;flamePreviousViewRotation=view.rotation;
+   flameHoldingMotion.Sample(Mathf.DeltaAngle(0f,look.x),Mathf.DeltaAngle(0f,look.y),new Vector3(travel.x,0f,travel.z).magnitude,Time.deltaTime);
+   flameSwayPosition=new Vector3(flameHoldingMotion.X,flameHoldingMotion.Y,0f);
+   flameSwayRotation=Quaternion.Euler(flameHoldingMotion.Pitch,flameHoldingMotion.Yaw,flameHoldingMotion.Roll);
   }
 
   internal void CompleteFlamethrowerHolding(FlamethrowerItem marker,FlamethrowerHoldingRunner controller){
    if(marker!=activeFlame||flamePlayer==null||marker.HoldingRig==null||marker.HoldingModel==null||!marker.Equipped||!marker.gameObject.activeInHierarchy)return;
+   if(!CanPresentHeldWeapon(flamePlayer.transform)){StopFlamethrower();return;}
    ReadFlamethrowerHolding();controller.RestoreBaseline();
    var view=flamePlayer.transform;
    SampleFlamethrowerAim();

@@ -69,6 +69,35 @@ class NexusPreflightTests(unittest.TestCase):
                 check.release_version(tag)
         self.assertEqual(check.release_version('v1.6.2'), '1.6.2')
 
+    def test_same_version_replacement_requires_exact_current_main(self):
+        versions = [{'id': 'current-id', 'version': '1.6.2', 'category': 'main'},
+                    {'id': 'old-id', 'version': '1.6.1', 'category': 'archived'}]
+        def get(url, headers):
+            if url.endswith('/users/validate.json'):
+                return {'name': 'JadedAutist'}
+            if url.endswith('/games/apocalypter/mods/68'):
+                return {'data': {'id': 'mod-id', 'name': 'Apocalypter Weapons Pack'}}
+            if url.endswith('/mods/mod-id/files'):
+                return {'data': {'mod_files': [{'id': 'file-id', 'name': 'Main', 'is_active': True}]}}
+            if url.endswith('/mod-files/file-id/versions'):
+                return {'data': {'versions': versions}}
+            self.fail('Unexpected endpoint')
+        def target(replacement='', version='1.6.2'):
+            return check.nexus_target('test-secret', 'file-id', True, version, get, replacement)
+        for bad in ('', 'wrong-id', 'old-id'):
+            with self.subTest(replacement=bad), self.assertRaises(ValueError):
+                target(bad)
+        self.assertEqual(target('current-id')['replacement_of'], 'current-id')
+        with self.assertRaises(ValueError):
+            target('current-id', '1.6.3')
+        versions[0]['category'] = 'archived'
+        with self.assertRaises(ValueError):
+            target('current-id')
+        # A successful replacement makes retrying the old request fail.
+        versions.insert(0, {'id': 'new-id', 'version': '1.6.2', 'category': 'main'})
+        with self.assertRaises(ValueError):
+            target('current-id')
+
 
 if __name__ == '__main__':
     unittest.main()
