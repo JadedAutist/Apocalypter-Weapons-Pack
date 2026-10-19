@@ -32,6 +32,7 @@ namespace ChainsawPrototype {
   void ApplyFlameVisualTuning(float distance){
    if(flameParticles==null)return;
    float opacity=FlameTuningValue(flameOpacity,.7f,.1f,1f),saturation=FlameTuningValue(flameSaturation,.45f,0f,1f),trail=FlameTuningValue(flameSmokeTrail,.7f,0f,1f),size=FlameTuningValue(flameParticleSize,1f,.5f,1.5f),smoke=FlameTuningValue(flameSmokeAmount,1.2f,0f,2f);
+   if(fireSmokeMaster!=null&&!fireSmokeMaster.Value)smoke=0f;
    if(tunedFlameParticles!=flameParticles||opacity!=tunedFlameOpacity||saturation!=tunedFlameSaturation||trail!=tunedFlameTrail||size!=tunedFlameSize||smoke!=tunedFlameSmoke){
     tunedFlameParticles=flameParticles;tunedFlameOpacity=opacity;tunedFlameSaturation=saturation;tunedFlameTrail=trail;tunedFlameSize=size;tunedFlameSmoke=smoke;
     var colours=flameParticles.colorOverLifetime;var gradient=new Gradient();

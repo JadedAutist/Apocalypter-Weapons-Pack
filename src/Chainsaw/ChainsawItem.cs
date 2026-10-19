@@ -51,7 +51,7 @@ namespace ChainsawPrototype {
   void EnsureRunner(){if(runner!=null)return;var go=new GameObject("ChainsawPrototype.Runtime");UnityEngine.Object.DontDestroyOnLoad(go);runner=go.AddComponent<PreviewRunner>();runner.owner=this;}
   internal void Tick(){
    TickWeaponMaintenance();TickFlameSiteDiscovery();
-   TickFlameIgnition();var held=FindHeldChainsaw();BindFuel(held);
+   TickFlameIgnition();TickFuelPatches(Time.time);var held=FindHeldChainsaw();BindFuel(held);
    if(held!=null && !enabledPreview){FindWeapon();if(weapon!=null && left!=null && right!=null)StartPreview();}
    if(enabledPreview && (held==null || weapon==null || camera==null || left==null || right==null))StopPreview();
    if(enabledPreview)SuppressCarrier();UpdateOwnedAttack();UpdateSawPresentation();UpdateCrosshair();if(enabledPreview)FindStandardMeleeEffect();UpdateFuelHud();TickFlamethrower();UpdateFlamethrowerCrosshair();TickEmptyTankFeedback();
@@ -87,7 +87,7 @@ namespace ChainsawPrototype {
     }
    }
    if(template==null || !templateReady || registered)return;
-   Type inspector=AccessTools.TypeByName("ApocalypterInspector.ItemSpawner");if(inspector==null)return;
+   Type inspector=OptionalWeaponTypes.Find("ApocalypterInspector.ItemSpawner");if(inspector==null)return;
    harmony.Patch(AccessTools.Method(inspector,"Finish"),prefix:new HarmonyMethod(typeof(Plugin),nameof(RegisterChainsaw)));
    RegisterChainsaw();AccessTools.Method(inspector,"Finish").Invoke(null,null);registered=true;Logger.LogInfo("Inspector item registered: Chainsaw");
   }
@@ -95,7 +95,7 @@ namespace ChainsawPrototype {
   internal static void UpdateDamageLabel(GameObject item){
    if(ReferenceEquals(instance,null))return;
    string text="Damage - "+instance.sawDamage.Value.ToString("0.##",System.Globalization.CultureInfo.InvariantCulture);
-   var fuel=item.GetComponentInChildren<ChainsawFuel>(true);if(fuel!=null)text+="\n"+fuel.Litres.ToString("0.00",System.Globalization.CultureInfo.InvariantCulture)+" / 5 L";
+   var fuel=item.GetComponentInChildren<ChainsawFuel>(true);if(fuel!=null)text+="\n"+fuel.Litres.ToString("0.00",System.Globalization.CultureInfo.InvariantCulture)+" / "+ChainsawFuel.Capacity.ToString("0",System.Globalization.CultureInfo.InvariantCulture)+" L";
    foreach(var fsm in item.GetComponents<PlayMakerFSM>()){
     if(fsm.FsmName!="ItemName")continue;
     foreach(var v in fsm.FsmVariables.StringVariables)if(v.Value!=null && v.Value.TrimStart().StartsWith("Damage -",StringComparison.OrdinalIgnoreCase))v.Value=text;
@@ -106,7 +106,7 @@ namespace ChainsawPrototype {
   }
   static void RegisterChainsaw(){
    if(ReferenceEquals(instance,null)||instance.template==null)return;
-   Type type=AccessTools.TypeByName("ApocalypterInspector.ItemSpawner");var known=AccessTools.Field(type,"known").GetValue(null) as IDictionary;if(known==null)return;
+   Type type=OptionalWeaponTypes.Find("ApocalypterInspector.ItemSpawner");var known=AccessTools.Field(type,"known").GetValue(null) as IDictionary;if(known==null)return;
    var row=known.Contains("chainsaw")?known["chainsaw"]:Activator.CreateInstance(type.GetNestedType("ItemRow",BindingFlags.Public|BindingFlags.NonPublic),true);
    foreach(var pair in new Dictionary<string,object>{{"Name","Chainsaw"},{"Label","Chainsaw"},{"Category","Melee Weapons"},{"Source",instance.template},{"IsAsset",true}})AccessTools.Field(row.GetType(),pair.Key).SetValue(row,pair.Value);
    known["chainsaw"]=row;

@@ -4,6 +4,7 @@ using System.Reflection.PortableExecutable;
 try {
  using var stream=File.OpenRead(args[0]);using var pe=new PEReader(stream);var metadata=pe.GetMetadataReader();
  if(metadata.GetString(metadata.GetAssemblyDefinition().Name)!="ChainsawPrototype")throw new Exception("Legacy assembly identity changed.");
+ foreach(var reference in metadata.AssemblyReferences){var name=metadata.GetString(metadata.GetAssemblyReference(reference).Name);if(name.Contains("BloodFX",StringComparison.OrdinalIgnoreCase)||name.Contains("Adjuster",StringComparison.OrdinalIgnoreCase)||name.Contains("Inspector",StringComparison.OrdinalIgnoreCase))throw new Exception("Optional/private assembly became a hard dependency: "+name);}
  TypeDefinition? plugin=null;
  string[] forbidden={"Spear","DrawWeaponPackPane","PreparePreviewPane","PreviewPaneLayout","ReservePreview"};
  foreach(var handle in metadata.TypeDefinitions){

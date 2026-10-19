@@ -25,7 +25,7 @@ namespace ChainsawPrototype {
    if(item!=null){
     if((grabName==null||grabDetails==null)&&Time.unscaledTime>=tooltipRetry){tooltipRetry=Time.unscaledTime+2f;var texts=Resources.FindObjectsOfTypeAll<Text>();grabName=texts.FirstOrDefault(t=>t.name=="ItemName"&&t.gameObject.scene.IsValid());grabDetails=texts.FirstOrDefault(t=>t.name=="ItemName_4"&&t.gameObject.scene.IsValid());}
     var fuel=item.GetComponentInChildren<ChainsawFuel>(true);lastGrabName=flame==null?"CHAINSAW":"FLAMETHROWER";
-    lastGrabDetails=flame!=null?FlamethrowerFuelDetails(item):"Damage - "+sawDamage.Value.ToString("0.##",System.Globalization.CultureInfo.InvariantCulture)+(fuel==null?"":"\n"+fuel.Litres.ToString("0.00",System.Globalization.CultureInfo.InvariantCulture)+" / 5 L");
+    lastGrabDetails=flame!=null?FlamethrowerFuelDetails(item):"Damage - "+sawDamage.Value.ToString("0.##",System.Globalization.CultureInfo.InvariantCulture)+(fuel==null?"":"\n"+fuel.Litres.ToString("0.00",System.Globalization.CultureInfo.InvariantCulture)+" / "+ChainsawFuel.Capacity.ToString("0",System.Globalization.CultureInfo.InvariantCulture)+" L");
     if(grabName!=null){grabName.enabled=true;grabName.text=lastGrabName;}if(grabDetails!=null){grabDetails.enabled=true;grabDetails.text=lastGrabDetails;}wroteGrabTooltip=true;
    }else if(wroteGrabTooltip){if(grabName!=null&&grabName.text==lastGrabName)grabName.text="";if(grabDetails!=null&&grabDetails.text==lastGrabDetails)grabDetails.text="";wroteGrabTooltip=false;}
   }

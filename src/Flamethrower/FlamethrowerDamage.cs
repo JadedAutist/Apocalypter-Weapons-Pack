@@ -11,6 +11,15 @@ namespace ChainsawPrototype {
   readonly Dictionary<Transform,FlameEnemyContact> flameEnemyContacts=new Dictionary<Transform,FlameEnemyContact>();
   struct FlameEnemyContact { public PlayMakerFSM Receiver;public Vector3 Point;public float Distance; }
 
+  static bool QualifiedFlameTrigger(Collider surface){
+   // Native heads and mounted crew have trigger hitboxes. A child proximity or
+   // fire sensor must not borrow a Bodypart from an ancestor to become a hitbox.
+   if(surface==null)return false;
+   foreach(var fsm in surface.GetComponents<PlayMakerFSM>())
+    if(fsm!=null&&fsm.Fsm!=null&&fsm.FsmName=="Bodypart"&&fsm.FsmVariables.FindFsmFloat("Damage")!=null)return true;
+   return false;
+  }
+
   static Vector3 ChooseFlameAimTarget(Vector3 muzzle,Vector3 viewForward,Vector3 worldTarget,Vector3? enemyPoint){
    // Preserve crosshair convergence on a nearby enemy despite an offset hip
    // muzzle. A target before the nozzle must never reverse the stream.
@@ -21,7 +30,7 @@ namespace ChainsawPrototype {
    owner=null;receiver=null;if(surface==null||OwnCollider(surface))return false;
    for(var node=surface.transform;node!=null;node=node.parent){
     foreach(var fsm in node.GetComponents<PlayMakerFSM>()){
-     if(fsm==null)continue;
+     if(fsm==null||fsm.Fsm==null)continue;
      if(receiver==null&&fsm.FsmName=="Bodypart"&&fsm.FsmVariables.FindFsmFloat("Damage")!=null)receiver=fsm;
      if(fsm.FsmName=="Health"&&fsm.FsmVariables.FindFsmFloat("Health")!=null)owner=node;
     }
@@ -38,8 +47,7 @@ namespace ChainsawPrototype {
    return null;
   }
   void DamageFlameReceiver(PlayMakerFSM receiver){
-   if(receiver==null)return;var damage=receiver.FsmVariables.FindFsmFloat("Damage");if(damage==null)return;
-   damage.Value=-Mathf.Abs(flamePaidDamage);receiver.SendEvent("Damage");
+   ApplyFlameDamage(receiver,Mathf.Abs(flamePaidDamage));
   }
   void EmitFlameContact(Vector3 point,Vector3 normal){
    if(flameContact==null)return;
@@ -77,7 +85,7 @@ namespace ChainsawPrototype {
    return found;
   }
 
-  void DamageFlameEnemies(Vector3 origin,Vector3 direction,float distance){
+  void CollectFlameEnemyContacts(Vector3 origin,Vector3 direction,float distance){
    flameEnemyContacts.Clear();if(distance<=.001f)return;
    // The chord capsule includes the parabola's maximum sag relative to it.
    float broadRadius=FlameTrajectory.Radius(distance)+FlameTrajectory.DropPerMetreSquared*distance*distance*.25f;
@@ -85,13 +93,14 @@ namespace ChainsawPrototype {
    // Hordes can fill an unsorted nonalloc buffer. Grow and retry, then fall back
    // to the complete query rather than silently omitting enemies.
    while(true){
-    count=Physics.OverlapCapsuleNonAlloc(origin,end,broadRadius,flameEnemyColliders,~(1<<2),QueryTriggerInteraction.Ignore);
+    count=Physics.OverlapCapsuleNonAlloc(origin,end,broadRadius,flameEnemyColliders,~(1<<2),QueryTriggerInteraction.Collide);
     if(count<flameEnemyColliders.Length){candidates=flameEnemyColliders;break;}
-    if(flameEnemyColliders.Length>=1024){candidates=Physics.OverlapCapsule(origin,end,broadRadius,~(1<<2),QueryTriggerInteraction.Ignore);count=candidates.Length;break;}
+    if(flameEnemyColliders.Length>=1024){candidates=Physics.OverlapCapsule(origin,end,broadRadius,~(1<<2),QueryTriggerInteraction.Collide);count=candidates.Length;break;}
     flameEnemyColliders=new Collider[flameEnemyColliders.Length*2];
    }
    for(int i=0;i<count;i++){
     var collider=candidates[i];Transform owner;PlayMakerFSM receiver;
+    if(collider.isTrigger&&!QualifiedFlameTrigger(collider))continue;
     if(!TryFlameEnemy(collider,out owner,out receiver)||receiver==null)continue;
     // The broad capsule gathers candidates only. Contact points must fit the
     // widening visible jet and have clear solid LOS from the actual muzzle.
@@ -100,6 +109,13 @@ namespace ChainsawPrototype {
     Vector3 point;float along;if(!TryFlameEnemyPoint(collider,origin,direction,distance,out point,out along,maximumAlong))continue;
     flameEnemyContacts[owner]=new FlameEnemyContact{Receiver=receiver,Point=point,Distance=along};
    }
+   Array.Clear(flameEnemyColliders,0,flameEnemyColliders.Length);
+  }
+  void DamageFlameEnemies(Vector3 origin,Vector3 direction,float distance){
+   // The per-frame ignite query already used these exact posed coordinates.
+   // Reuse it for this paid damage tick, then release its actor references.
+   if(!flameIgniteContactsReady||flameIgniteFrame!=Time.frameCount||flameIgniteOrigin!=origin||flameIgniteDirection!=direction||flameIgniteDistance!=distance)CollectFlameEnemyContacts(origin,direction,distance);
+   flameIgniteContactsReady=false;
    // One native Bodypart event per shared health owner per paid fuel interval,
    // regardless of how many head, torso or limb colliders enter the flame.
    foreach(var contact in flameEnemyContacts.Values){DamageFlameReceiver(contact.Receiver);EmitFlameContact(contact.Point,-direction);}

@@ -9,8 +9,7 @@ using UnityEngine;
 namespace ChainsawPrototype {
  [Serializable] public class Pose { public Vector3 position; public Quaternion rotation; }
  [Serializable] public class PreviewData { public Vector3 leftPosition,rightPosition,bladeDirection,bladeNormal;public Quaternion leftRotation,rightRotation; public Vector3[] vertices; public Vector2[] uv; public int[] triangles; }
- [BepInPlugin("apocalypter.weaponspack", "Apocalypter Weapons Pack", "1.6.2")]
- [BepInDependency("apocalypter.handarmplacement",BepInDependency.DependencyFlags.SoftDependency)]
+ [BepInPlugin("apocalypter.weaponspack", "Apocalypter Weapons Pack", "1.6.3")]
  public partial class Plugin : BaseUnityPlugin {
   static Plugin instance; Harmony harmony; PreviewData data; GameObject preview; Transform weapon,camera,left,right;
   Mesh heldMesh;Material chainsawMaterial;bool enabledPreview;Transform nativeRigSource;bool calibratedIK;ChainsawItem lastHeldChain;float lastHeldSeen;Transform nativeView;bool nativeWasActive;PlayMakerFSM heldFsm;

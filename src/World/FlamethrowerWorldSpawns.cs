@@ -2,13 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.Serialization;
 using ES3Internal;
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
 using UnityEngine;
 namespace ChainsawPrototype {
- [Serializable] public sealed class FlameWorldSpawnRecord {public string key,anchor,itemName;public bool pending;}
- [Serializable] public sealed class FlameWorldSpawnSave {public int version=1;public FlameWorldSpawnRecord[] areas=new FlameWorldSpawnRecord[0];public FlameSavedTestSite[] testSites=new FlameSavedTestSite[0];}
+ [Serializable,DataContract] public sealed class FlameWorldSpawnRecord {[DataMember] public string key,anchor,itemName;[DataMember] public bool pending;}
+ [Serializable,DataContract] public sealed class FlameWorldSpawnSave {[DataMember] public int version=1;[DataMember] public FlameWorldSpawnRecord[] areas=new FlameWorldSpawnRecord[0];[DataMember] public FlameSavedTestSite[] testSites=new FlameSavedTestSite[0];}
  internal sealed class FlameSpawnSite {internal Transform Root,Room,Anchors,Reference;internal bool Laboratory;internal string Key;}
  public partial class Plugin {
   static readonly float FlamethrowerWorldSpawnChance=.25f;
@@ -95,10 +96,10 @@ namespace ChainsawPrototype {
    var item=Instantiate(flameTemplate,position,rotation);item.transform.SetParent(null,true);item.SetActive(true);
    TrackPersistentFlamethrower(item);InitializeSpawnFuel(item);UpdateFlamethrowerFuelLabel(item);return item;
   }
-  void SaveFlameWorldSpawns(ES3Settings settings){ES3.Save<string>(FlameWorldSpawnSaveKey,JsonUtility.ToJson(new FlameWorldSpawnSave{areas=flameWorldSpawnRecords.Values.OrderBy(r=>r.key,StringComparer.Ordinal).ToArray(),testSites=SavedFlameTestSites()}),settings);}
+  void SaveFlameWorldSpawns(ES3Settings settings){ES3.Save<string>(FlameWorldSpawnSaveKey,WeaponSaveJson.Serialize(new FlameWorldSpawnSave{areas=flameWorldSpawnRecords.Values.OrderBy(r=>r.key,StringComparer.Ordinal).ToArray(),testSites=SavedFlameTestSites()}),settings);}
   void LoadFlameWorldSpawns(ES3Settings settings){
    flameWorldSpawnRecords.Clear();ClearFlameTestSiteCopies();if(!ES3.KeyExists(FlameWorldSpawnSaveKey,settings))return;
-   var saved=JsonUtility.FromJson<FlameWorldSpawnSave>(ES3.Load<string>(FlameWorldSpawnSaveKey,settings));
+   var saved=WeaponSaveJson.Deserialize<FlameWorldSpawnSave>(ES3.Load<string>(FlameWorldSpawnSaveKey,settings));
    if(saved==null||saved.version!=1||saved.areas==null)return;
    foreach(var record in saved.areas)if(record!=null&&!string.IsNullOrEmpty(record.key))flameWorldSpawnRecords[record.key]=record;
    RestoreFlameTestSites(saved.testSites);

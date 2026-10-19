@@ -2,7 +2,7 @@ using System;
 namespace ChainsawPrototype {
  public enum FlameFuelKind {Gasoline=0,Diesel=1,EngineOil=2}
  internal static class FlamethrowerFuelPolicy {
-  internal const float EmptyTolerance=.00001f,Capacity=5f;
+  internal const float EmptyTolerance=.00001f,Capacity=ChainsawFuel.Capacity;
   internal static bool Valid(FlameFuelKind kind){return kind>=FlameFuelKind.Gasoline&&kind<=FlameFuelKind.EngineOil;}
   internal static string Label(FlameFuelKind kind){return kind==FlameFuelKind.Diesel?"Diesel":kind==FlameFuelKind.EngineOil?"Engine oil":"Gasoline";}
   internal static string Tag(FlameFuelKind kind){return kind==FlameFuelKind.Diesel?"Diesel":kind==FlameFuelKind.EngineOil?"MotorOil":"Gasoline";}

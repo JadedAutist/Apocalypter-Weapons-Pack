@@ -49,7 +49,7 @@ namespace ChainsawPrototype {
    if(proxy!=null){var volume=proxy.FsmVariables.FindFsmFloat("Liquid");var cap=proxy.FsmVariables.FindFsmFloat("LiquidCapacity");if(volume!=null&&gameObject!=Tank.gameObject)volume.Value=Tank.Litres;if(cap!=null)cap.Value=gameObject==Tank.gameObject||Tank.CanAccept(Kind)?FlamethrowerFuelPolicy.Capacity:Tank.Litres;}
    if(inlet==null)inlet=GetComponent<BoxCollider>();bool carried=false;
    for(var node=Tank.transform.parent;node!=null;node=node.parent)if(node.name=="PlayerCamera"||node.name=="HandItemUse")carried=true;
-   if(inlet!=null)inlet.enabled=!carried&&Tank.CanAccept(Kind)&&Tank.Litres<5f-.00001f;
+   if(inlet!=null)inlet.enabled=!carried&&Tank.CanAccept(Kind)&&Tank.Litres<FlamethrowerFuelPolicy.Capacity-.00001f;
   }
   void LateUpdate(){Sync();}
   internal void Transfer(GameObject source,PlayMakerFSM pour,float amount){
@@ -58,11 +58,11 @@ namespace ChainsawPrototype {
    Tank.Receive(source,actual,amount);Sync();
    var sourceLiquid=source.GetComponents<PlayMakerFSM>().FirstOrDefault(f=>f.FsmName=="LiquidAmount");
    var from=sourceLiquid==null?null:sourceLiquid.FsmVariables.FindFsmFloat("Liquid");
-   if(pour!=null){var can=pour.FsmVariables.FindFsmFloat("CanLiquid");var current=pour.FsmVariables.FindFsmFloat("Liquid");var cap=pour.FsmVariables.FindFsmFloat("LiquidCapacity");if(can!=null&&from!=null)can.Value=from.Value;if(current!=null)current.Value=Tank.Litres;if(cap!=null)cap.Value=Tank.CanAccept(Kind)?5f:Tank.Litres;}
+   if(pour!=null){var can=pour.FsmVariables.FindFsmFloat("CanLiquid");var current=pour.FsmVariables.FindFsmFloat("Liquid");var cap=pour.FsmVariables.FindFsmFloat("LiquidCapacity");if(can!=null&&from!=null)can.Value=from.Value;if(current!=null)current.Value=Tank.Litres;if(cap!=null)cap.Value=Tank.CanAccept(Kind)?FlamethrowerFuelPolicy.Capacity:Tank.Litres;}
   }
  }
  public partial class Plugin {
-  internal static float ValidFuelAmount(float value){return float.IsNaN(value)||float.IsInfinity(value)?0f:Mathf.Clamp(value,0f,5f);}
+  internal static float ValidFuelAmount(float value){return float.IsNaN(value)||float.IsInfinity(value)?0f:Mathf.Clamp(value,0f,FlamethrowerFuelPolicy.Capacity);}
   internal static bool TryNativeFuelKind(GameObject source,out FlameFuelKind kind){
    kind=FlameFuelKind.Gasoline;if(source==null)return false;
    var own=source.GetComponent<FlamethrowerFuelTank>();if(own!=null){kind=own.Kind;return true;}

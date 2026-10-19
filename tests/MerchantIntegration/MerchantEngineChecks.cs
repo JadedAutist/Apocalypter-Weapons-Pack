@@ -79,6 +79,8 @@ public sealed class MerchantEngineChecks:BaseUnityPlugin {
   var config=((BaseUnityPlugin)owner).Config;config.Clear();config.Save();
   config.Bind("General","Apocasetter",true);
   Call(owner,"SetupCombat");Call(owner,"SetupCuttingAttack");Call(owner,"SetupFlameFuelBalance");
+  bool ignite=owner.GetType().GetMethod("SetupFlamethrowerIgnite",All)!=null;
+  if(ignite)Call(owner,"SetupFlamethrowerIgnite");
   bool spear=owner.GetType().GetMethod("SetupWoodenSpearCombat",All)!=null;
   if(spear){Call(owner,"SetupWoodenSpearCombat");Call(owner,"SetupSpearThrow");}
   var gasoline=config.Bind("Flamethrower - Gasoline","Range",5f);
@@ -93,7 +95,14 @@ public sealed class MerchantEngineChecks:BaseUnityPlugin {
   Call(owner,"TrimWeaponSettings");
   Check(gasoline.Value==5f&&diesel.Value==7f&&rate.Value==.8f,"old saved settings round on startup");
   var entries=config.Select(p=>p.Value).OfType<ConfigEntry<float>>().ToArray();
-  Check(entries.Length==(spear?24:19),"all weapon balance settings covered");
+  Check(entries.Length==(spear?24:19)+(ignite?3:0),"all weapon balance settings covered");
+  if(ignite){
+   Check((float)config.Bind("Flamethrower - Ignite","Damage per stack",10f).DefaultValue==10f&&
+    (int)config.Bind("Flamethrower - Ignite","Maximum stacks",5).DefaultValue==5&&
+    (float)config.Bind("Flamethrower - Ignite","Stack interval",1f).DefaultValue==1f&&
+    (float)config.Bind("Flamethrower - Ignite","Burn duration",10f).DefaultValue==10f,"ignite settings default to 10 DPS, five stacks, one second and ten seconds");
+   var burn=config.Bind("Flamethrower - Ignite","Burn duration",10f);burn.Value=10.34567f;Check(burn.Value==10.3f,"ignite duration edits follow balance tenths");
+  }
   foreach(var entry in entries){
    Check((float)Math.Round((decimal)(float)entry.DefaultValue,1,MidpointRounding.AwayFromZero)==(float)entry.DefaultValue,"clean default: "+entry.Definition);
   }

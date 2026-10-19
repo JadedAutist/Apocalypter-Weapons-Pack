@@ -34,7 +34,7 @@ namespace ChainsawPrototype {
  public partial class Plugin {
   GameObject flameTemplate;bool flameRegistered;Mesh flameMesh,flameBox;Material flameMaterial,flameBoxMaterial;FlamethrowerItem activeFlame;Transform flameCarrier;bool flameCarrierActive;ParticleSystem flameParticles;
   ConfigEntry<float> flameDamage,flameRange;Texture2D flameIcon;
-  void SetupFlamethrower(){SetupFlamethrowerTuning();SetupFlameFuelBalance();SetupFlameEffects();}
+  void SetupFlamethrower(){SetupFlamethrowerTuning();SetupFlameFuelBalance();SetupFlamethrowerIgnite();SetupFuelPuddles();SetupFlameEffects();}
   Material FlameMaterial(string textureName){
    var folder=Path.Combine(Path.GetDirectoryName(Info.Location),"Flamethrower");
    var image=new Texture2D(2,2);ImageConversion.LoadImage(image,File.ReadAllBytes(Path.Combine(folder,textureName+".png")));image.hideFlags=HideFlags.DontUnloadUnusedAsset;
@@ -62,7 +62,7 @@ namespace ChainsawPrototype {
     var solid=flameTemplate.AddComponent<BoxCollider>();var bounds=flameMesh.bounds;bounds.Encapsulate(flameBox.bounds);solid.center=Vector3.Scale(bounds.center,model.localScale);solid.size=Vector3.Scale(bounds.size,model.localScale);
     if(!AddFuelTank(flameTemplate)){Destroy(stage);flameTemplate=null;return;}PrepareFlamethrowerCodex(flameTemplate);ResetOwnedWeaponSale(flameTemplate);flameTemplate.SetActive(true);
    }
-   if(flameRegistered)return;var type=AccessTools.TypeByName("ApocalypterInspector.ItemSpawner");if(type==null)return;
+   if(flameRegistered)return;var type=OptionalWeaponTypes.Find("ApocalypterInspector.ItemSpawner");if(type==null)return;
    var known=AccessTools.Field(type,"known").GetValue(null) as IDictionary;if(known==null)return;var row=Activator.CreateInstance(type.GetNestedType("ItemRow",BindingFlags.Public|BindingFlags.NonPublic),true);
    foreach(var pair in new Dictionary<string,object>{{"Name","Flamethrower"},{"Label","Flamethrower"},{"Category","Ranged Weapons"},{"Source",flameTemplate},{"IsAsset",true}})AccessTools.Field(row.GetType(),pair.Key).SetValue(row,pair.Value);known["flamethrower"]=row;AccessTools.Method(type,"Finish").Invoke(null,null);flameRegistered=true;Logger.LogInfo("Inspector item registered: Flamethrower");
   }

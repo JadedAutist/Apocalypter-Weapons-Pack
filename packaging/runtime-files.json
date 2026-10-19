@@ -1,5 +1,5 @@
 {
-  "version": "1.6.2",
+  "version": "1.6.3",
   "assets": [
     {
       "path": "Chainsaw-icon.png",
@@ -100,6 +100,10 @@
     {
       "path": "WeaponFeedback/EmptySawStarter.wav",
       "sha256": "4B0FC704AF0AA433900B2353270090EB0BFB82150D8356110A89C0F7E279A558"
+    },
+    {
+      "path": "Flamethrower/BurntSkin.png",
+      "sha256": "E7468D5067D44A3F903F6047D2662A8A59A7697BE9ACCEEC07783C0AAE1C7AE8"
     }
   ]
 }

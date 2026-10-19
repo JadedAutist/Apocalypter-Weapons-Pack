@@ -2,14 +2,15 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.Serialization;
 using HutongGames.PlayMaker;
 using HutongGames.PlayMaker.Actions;
 using UnityEngine;
 namespace ChainsawPrototype {
- [Serializable] public sealed class WeaponMerchantRecord {
-  public string key,itemName;public bool flame,spawn,created,forSale;public int price;
+ [Serializable,DataContract] public sealed class WeaponMerchantRecord {
+  [DataMember] public string key,itemName;[DataMember] public bool flame,spawn,created,forSale;[DataMember] public int price;
  }
- [Serializable] public sealed class WeaponMerchantSave {public int version=1;public WeaponMerchantRecord[] stock=new WeaponMerchantRecord[0];}
+ [Serializable,DataContract] public sealed class WeaponMerchantSave {[DataMember] public int version=1;[DataMember] public WeaponMerchantRecord[] stock=new WeaponMerchantRecord[0];}
  // The native Buyable FSM owns payment, insufficient-funds checks and release.
  // This helper only holds the private weapon on its display while ForBuyInt=1.
  [DefaultExecutionOrder(32010)] public sealed class WeaponMerchantSale:MonoBehaviour {
@@ -115,11 +116,11 @@ namespace ChainsawPrototype {
   }
   void SaveWeaponMerchantStock(ES3Settings settings){
    if(chainsawSaveItems!=null&&chainsawSaveItems.arrayList!=null)foreach(var entry in chainsawSaveItems.arrayList){var item=entry as GameObject;var marker=item==null?null:item.GetComponent<WeaponMerchantSale>();if(marker!=null&&marker.Record!=null)marker.Record.forSale=marker.ForSale;}
-   ES3.Save<string>(WeaponMerchantSaveKey,JsonUtility.ToJson(new WeaponMerchantSave{stock=weaponMerchantRecords.Values.OrderBy(r=>r.key,StringComparer.Ordinal).ToArray()}),settings);
+   ES3.Save<string>(WeaponMerchantSaveKey,WeaponSaveJson.Serialize(new WeaponMerchantSave{stock=weaponMerchantRecords.Values.OrderBy(r=>r.key,StringComparer.Ordinal).ToArray()}),settings);
   }
   void LoadWeaponMerchantStock(ES3Settings settings){
    weaponMerchantRecords.Clear();pendingMerchantRestore.Clear();merchantRestoreUntil=Time.unscaledTime+15f;if(!ES3.KeyExists(WeaponMerchantSaveKey,settings))return;
-   var saved=JsonUtility.FromJson<WeaponMerchantSave>(ES3.Load<string>(WeaponMerchantSaveKey,settings));if(saved==null||saved.version!=1||saved.stock==null)return;
+   var saved=WeaponSaveJson.Deserialize<WeaponMerchantSave>(ES3.Load<string>(WeaponMerchantSaveKey,settings));if(saved==null||saved.version!=1||saved.stock==null)return;
    foreach(var record in saved.stock)if(record!=null&&!string.IsNullOrEmpty(record.key)){
     weaponMerchantRecords[record.key]=record;
     if(record.created&&!string.IsNullOrEmpty(record.itemName))pendingMerchantRestore[record.itemName]=record;

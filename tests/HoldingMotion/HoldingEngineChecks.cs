@@ -54,5 +54,24 @@ public sealed class HoldingEngineChecks:BaseUnityPlugin {
   Check(!flameRig.activeSelf&&Get(owner,"activeFlame")==null&&!(bool)Get(owner,"flameFiring")&&!(bool)Get(owner,"flameDamagePending"),"flamethrower holding callback hides rig and cancels firing/damage on death");
   hp.Value=100;DestroyImmediate(view);var next=new GameObject("PlayerCamera");new GameObject("WeaponsArm").transform.SetParent(next.transform,false);
   Check((bool)Call(owner,"CanPresentHeldWeapon",next.transform),"replacement camera binds fresh presentation state after reload");
+  CheckCuttingVibration(owner);
+ }
+ void CheckCuttingVibration(object owner){
+  Call(owner,"SetupCuttingAttack");
+  var view=new GameObject("CuttingFixtureView").transform;
+  var model=new GameObject("CuttingFixtureModel");var left=new GameObject("CuttingFixtureLeft").transform;var right=new GameObject("CuttingFixtureRight").transform;
+  var nodes=new[]{model.transform,left,right};
+  var positions=new[]{new Vector3(.2f,.1f,.5f),new Vector3(-.1f,.05f,.4f),new Vector3(.1f,-.05f,.3f)};
+  Action reset=()=>{for(int i=0;i<nodes.Length;i++)nodes[i].SetPositionAndRotation(positions[i],Quaternion.identity);};
+  Set(owner,"camera",view);Set(owner,"preview",model);Set(owner,"left",left);Set(owner,"right",right);Set(owner,"cuttingBlend",1f);Set(owner,"gameAttacking",false);
+  reset();Set(owner,"cuttingHeld",false);Call(owner,"ApplyCuttingPose");var rest=model.transform.position;var restRotation=model.transform.rotation;
+  reset();Set(owner,"cuttingHeld",true);Call(owner,"ApplyCuttingPose");var active=model.transform.position;var activeRotation=model.transform.rotation;
+  Check((active-rest).sqrMagnitude>1e-10f||Quaternion.Angle(activeRotation,restRotation)>.001f,"RMB cutting adds visible model vibration to the unchanged cutting lean");
+  Check((active-rest).magnitude<.005f&&Quaternion.Angle(activeRotation,restRotation)<1f,"RMB model vibration remains below 5 mm and one degree");
+  Check(Mathf.Abs(Vector3.Distance(left.position,right.position)-Vector3.Distance(positions[1],positions[2]))<.00001f,"cutting vibration moves both grips rigidly without stretching");
+  reset();Call(owner,"ApplyCuttingPose");Check((model.transform.position-active).sqrMagnitude<1e-10f&&Quaternion.Angle(model.transform.rotation,activeRotation)<.001f,"same-frame render callbacks reuse identical cutting vibration");
+  Set(owner,"gameAttacking",true);reset();Call(owner,"ApplyCuttingPose");Check((model.transform.position-rest).sqrMagnitude<1e-10f&&Quaternion.Angle(model.transform.rotation,restRotation)<.001f,"LMB does not acquire the RMB vibration");Set(owner,"gameAttacking",false);
+  float scale=Time.timeScale;Time.timeScale=0;reset();Call(owner,"ApplyCuttingPose");Check((model.transform.position-rest).sqrMagnitude<1e-10f&&Quaternion.Angle(model.transform.rotation,restRotation)<.001f,"paused pose does not add cutting vibration");Time.timeScale=scale;
+  Call(owner,"ResetCuttingAttack");reset();Call(owner,"ApplyCuttingPose");Check((model.transform.position-positions[0]).sqrMagnitude<1e-10f&&Quaternion.Angle(model.transform.rotation,Quaternion.identity)<.001f,"cutting reset leaves no residual model vibration");
  }
 }

@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Serialization;
 using UnityEngine;
 namespace ChainsawPrototype {
  // Compatibility only: rebuild sites already recorded by development saves.
  // Release gameplay has no test-site creation controls or terrain plot search.
- [Serializable] public sealed class FlameSavedTestSite {public bool laboratory;public Vector3 position;public Quaternion rotation;}
+ [Serializable,DataContract] public sealed class FlameSavedTestSite {[DataMember] public bool laboratory;[DataMember] public Vector3 position;[DataMember] public Quaternion rotation;}
  public sealed class FlameTestSite:MonoBehaviour {public bool Laboratory;}
  public partial class Plugin {
   readonly List<FlameTestSite> flameTestSiteCopies=new List<FlameTestSite>();

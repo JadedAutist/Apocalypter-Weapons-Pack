@@ -5,12 +5,12 @@ using UnityEngine;
 using UnityEngine.UI;
 namespace ChainsawPrototype {
  public sealed class ChainsawFuel : MonoBehaviour {
-  public const float Capacity=5f,PerSwing=.10f;
-  PlayMakerFSM tank,pour;FsmFloat liquid;BoxCollider inlet;Collider nozzle;bool wasGrabbed;
+  public const float Capacity=10f,PerSwing=.10f;
+  PlayMakerFSM tank,pour;FsmFloat liquid,capacity;BoxCollider inlet;Collider nozzle;bool wasGrabbed;
   void Start(){Plugin.ConfigureFuelPour(gameObject);}
   public float Litres {get{EnsureTank();return liquid==null?0f:Mathf.Clamp(liquid.Value,0f,Capacity);}}
   public bool Ready {get{return FlamethrowerFuelPolicy.CanBurn(Litres);}}
-  void EnsureTank(){if(tank==null)tank=GetComponents<PlayMakerFSM>().FirstOrDefault(f=>f.FsmName=="LiquidAmount");if(pour==null)pour=GetComponents<PlayMakerFSM>().FirstOrDefault(f=>f.FsmName=="UseCan");if(nozzle==null){var t=transform.Find("FuelTrigger");if(t!=null)nozzle=t.GetComponent<Collider>();}if(tank!=null && liquid==null)liquid=tank.FsmVariables.FindFsmFloat("Liquid");if(inlet==null)inlet=GetComponent<BoxCollider>();}
+  void EnsureTank(){if(tank==null)tank=GetComponents<PlayMakerFSM>().FirstOrDefault(f=>f.FsmName=="LiquidAmount");if(pour==null)pour=GetComponents<PlayMakerFSM>().FirstOrDefault(f=>f.FsmName=="UseCan");if(nozzle==null){var t=transform.Find("FuelTrigger");if(t!=null)nozzle=t.GetComponent<Collider>();}if(tank!=null && liquid==null){liquid=tank.FsmVariables.FindFsmFloat("Liquid");capacity=tank.FsmVariables.FindFsmFloat("LiquidCapacity");}if(capacity!=null&&capacity.Value!=Capacity)capacity.Value=Capacity;if(inlet==null)inlet=GetComponent<BoxCollider>();}
   public void Consume(){EnsureTank();if(liquid!=null)liquid.Value=Mathf.Max(0f,Mathf.Round((liquid.Value-PerSwing)*10000f)/10000f);}
   public int ConsumeAttacks(int requested,float cost){
    EnsureTank();if(liquid==null||requested<=0||cost<=0f||float.IsNaN(cost)||float.IsInfinity(cost))return 0;
@@ -53,7 +53,7 @@ namespace ChainsawPrototype {
     foreach(var c in nozzle.GetComponents<Collider>())DestroyImmediate(c);var outlet=nozzle.gameObject.AddComponent<SphereCollider>();outlet.isTrigger=true;outlet.radius=.12f;outlet.enabled=false;
    }
    tank.AddComponent<ChainsawFuel>();InstallConservedPour(tank);if(item.GetComponent<FlamethrowerItem>()!=null)AddFlamethrowerFuelPorts(tank,source.gameObject);tank.SetActive(true);
-   Logger.LogInfo("Chainsaw native gasoline receiver ready: 5 L capacity, 0.10 L per swing, including misses.");return true;
+   Logger.LogInfo("Weapons Pack native fuel receiver ready: "+ChainsawFuel.Capacity+" L capacity.");return true;
   }
   void BindFuel(ChainsawItem item){if(item==fuelOwner)return;fuelOwner=item;heldFuel=item==null?null:item.GetComponentInChildren<ChainsawFuel>(true);displayedFuel=heldFuel==null?-1f:heldFuel.Litres;}
   internal void UpdateFuelHud(){

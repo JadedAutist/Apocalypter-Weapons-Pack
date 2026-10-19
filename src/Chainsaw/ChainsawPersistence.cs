@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.Serialization;
 using HarmonyLib;
 using HutongGames.PlayMaker;
 using UnityEngine;
@@ -9,20 +10,20 @@ using UnityEngine.SceneManagement;
 using ES3Internal;
 
 namespace ChainsawPrototype {
- [Serializable] public sealed class ChainsawSavedFuel {
-  public string reference, name;
-  public float litres;
+ [Serializable,DataContract] public sealed class ChainsawSavedFuel {
+  [DataMember] public string reference, name;
+  [DataMember] public float litres;
  }
- [Serializable] public sealed class ChainsawAreaRoll {
-  public string key;
-  public bool spawn;
-  public int anchorIndex;
+ [Serializable,DataContract] public sealed class ChainsawAreaRoll {
+  [DataMember] public string key;
+  [DataMember] public bool spawn;
+  [DataMember] public int anchorIndex;
  }
- [Serializable] public sealed class ChainsawSaveData {
-  public int version=1;
-  public bool codexDiscovered;
-  public ChainsawSavedFuel[] fuel=new ChainsawSavedFuel[0];
-  public ChainsawAreaRoll[] areas=new ChainsawAreaRoll[0];
+ [Serializable,DataContract] public sealed class ChainsawSaveData {
+  [DataMember] public int version=1;
+  [DataMember] public bool codexDiscovered;
+  [DataMember] public ChainsawSavedFuel[] fuel=new ChainsawSavedFuel[0];
+  [DataMember] public ChainsawAreaRoll[] areas=new ChainsawAreaRoll[0];
  }
  public partial class Plugin {
   // A permanent, mod-owned identity. Never reuse the donor rifle's ES3 prefab ID.
@@ -53,7 +54,7 @@ namespace ChainsawPrototype {
    if(mode==LoadSceneMode.Additive)return;
    ClearWeaponMerchantRequests();
    chainsawSaveItems=null;chainsawItemCatalog=null;
-   if(chainsawMetadataSceneHandle!=scene.handle){chainsawAreaRolls.Clear();chainsawPendingFuel.Clear();pendingFlameTanks.Clear();ResetFlameWorldSpawns();ResetWeaponMerchantStock();ResetChainsawCodexDiscovery();ResetFlamethrowerCodexDiscovery();chainsawMetadataSceneHandle=-1;}
+   if(chainsawMetadataSceneHandle!=scene.handle){chainsawAreaRolls.Clear();chainsawPendingFuel.Clear();pendingFlameTanks.Clear();ClearPendingBurntCorpses();ResetFlameWorldSpawns();ResetWeaponMerchantStock();ResetChainsawCodexDiscovery();ResetFlamethrowerCodexDiscovery();chainsawMetadataSceneHandle=-1;}
    chainsawLoadDepth=0;chainsawLoadingUntil=Time.unscaledTime+3f;
   }
 
@@ -121,7 +122,7 @@ namespace ChainsawPrototype {
     if(item==null || item.gameObject==template || !item.gameObject.scene.IsValid() || !item.gameObject.scene.isLoaded)continue;
     TrackPersistentChainsaw(item.gameObject);
    }
-   RestorePendingChainsawFuel();
+   RestorePendingChainsawFuel();RestorePendingBurntCorpses();
   }
   void TrackPersistentChainsaw(GameObject item){
    FindChainsawSaveLists();
@@ -181,7 +182,7 @@ namespace ChainsawPrototype {
    instance.chainsawLoadDepth=Mathf.Max(0,instance.chainsawLoadDepth-1);instance.chainsawLoadingUntil=Time.unscaledTime+3f;
    instance.MarkLoadedWeaponFuel();
    if(__exception==null)instance.RestoreWeaponMerchantStock();
-   if(__exception==null){instance.RestorePendingChainsawFuel();instance.RestorePendingFlamethrowerFuel();}return __exception;
+   if(__exception==null){instance.RestorePendingChainsawFuel();instance.RestorePendingFlamethrowerFuel();instance.RestorePendingBurntCorpses();}return __exception;
   }
   void SaveNativeChainsawData(ES3Settings settings){
    TickChainsawPersistence();
@@ -193,11 +194,12 @@ namespace ChainsawPrototype {
     saved.Add(new ChainsawSavedFuel{reference=manager==null?null:manager.Add(item).ToString(CultureInfo.InvariantCulture),name=item.name,litres=fuel.Litres});
    }
    var data=new ChainsawSaveData{codexDiscovered=GetChainsawCodexDiscovery(),fuel=saved.ToArray(),areas=chainsawAreaRolls.Values.OrderBy(r=>r.key,StringComparer.Ordinal).ToArray()};
-   ES3.Save<string>(ChainsawSaveKey,JsonUtility.ToJson(data),settings);
+   ES3.Save<string>(ChainsawSaveKey,WeaponSaveJson.Serialize(data),settings);
    SaveFlamethrowerCodexDiscovery(settings);
    SaveFlamethrowerFuel(settings);
    SaveFlameWorldSpawns(settings);
    SaveWeaponMerchantStock(settings);
+   SaveBurntCorpses(settings);
    Logger.LogInfo("Saved "+saved.Count+" chainsaw fuel records and "+data.areas.Length+" area spawn rolls with "+settings.path+".");
   }
   void LoadNativeChainsawData(ES3Settings settings){
@@ -206,8 +208,9 @@ namespace ChainsawPrototype {
    LoadFlamethrowerFuel(settings);
    LoadFlameWorldSpawns(settings);
    LoadWeaponMerchantStock(settings);
+   LoadBurntCorpses(settings);
    if(!ES3.KeyExists(ChainsawSaveKey,settings))return;
-   var data=JsonUtility.FromJson<ChainsawSaveData>(ES3.Load<string>(ChainsawSaveKey,settings));
+   var data=WeaponSaveJson.Deserialize<ChainsawSaveData>(ES3.Load<string>(ChainsawSaveKey,settings));
    if(data==null || data.version!=1)return;
    RestoreChainsawCodexDiscovery(data.codexDiscovered);
    if(data.areas!=null)foreach(var roll in data.areas)if(roll!=null && !string.IsNullOrEmpty(roll.key))chainsawAreaRolls[roll.key]=roll;

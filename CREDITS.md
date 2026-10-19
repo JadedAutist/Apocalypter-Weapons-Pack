@@ -1,6 +1,7 @@
 # Credits
 
 - JadedAutist: Apocalypter Weapons Pack author.
+- BurntSkin.png: original AI-generated texture created for this pack, simplified to 512 pixels for the game. The reference photograph is not distributed.
 - Deon: supplied the merchant-FSM construction and Apocasetter settings-hook fix handoff dated 16 October 2026.
 - The integrated fix additionally uses PlayMaker SetName and refreshed variable lookups, verified against the installed game runtime.
 

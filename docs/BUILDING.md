@@ -11,10 +11,27 @@ The source builds the public chainsaw/flamethrower plugin. Use an installed .NET
 
 You can set the environment variable APOCALYPTER_GAME_DIR instead of repeating GameDir. Game/BepInEx DLLs are references with copying disabled. Building does not install the plugin into the game.
 
+The integration checks use separate fixture hosts with the installed PlayMaker, Apocapocket and Apocasetter assemblies. To include the targeted Wild Wasteland and BloodFX component checks, pass their DLLs explicitly:
+
+```powershell
+./scripts/verify.ps1 -GameDir '<installation>' -IncludeIntegration -WildWastelandDll '<WildWasteland.dll>' -BloodFxDll '<BloodFX.dll>' -BloodFxConfig '<BloodFX config>'
+```
+
+These are isolated component checks; complete the live workflows in TESTING.md before release. A fresh assertion report alone is insufficient: the runner also requires clean native exit and logs without crash markers.
+
 Build output is under `artifacts/runtime/BepInEx/plugins/Apocalypter Weapons Pack`. Package output is under `dist`. Install the ZIP with the game closed to test the release, retaining your existing config files. Keep a separate development installation when working on unreleased weapons.
 
 Runtime assets live only in `assets/runtime`. `packaging/runtime-files.json` lists their accepted relative paths and SHA-256 hashes. Intentional asset changes require updating that manifest after review. No test output or author files are selected by the packager.
 
 `-NoRestore` on build.ps1 supports an already restored/offline project. An offline restore can use a local feed containing Microsoft.NETFramework.ReferenceAssemblies 1.0.3 and Microsoft.NETFramework.ReferenceAssemblies.net472 1.0.3. These are build dependencies, not release files.
+
+For a newly extracted source archive without network access, restore from that feed first, then build. Use your own feed/cache paths; neither directory belongs in the public archive:
+
+```powershell
+dotnet restore ./src/ApocalypterWeaponsPack.csproj --source '<local reference-package feed>' --packages '<local package cache>' -p:NuGetAudit=false
+./scripts/build.ps1 -GameDir '<Apocalypter installation>' -NoRestore
+```
+
+The 1.6.3 source-archive rebuild used SDK 10.0.402 and those reference packages and reproduced the tested DLL byte for byte. A full compile reports six existing CS0649 warnings on JSON-populated StockPlacement fields and zero errors; an incremental build may report no warnings.
 
 The DLL is still named ChainsawPrototype.dll to preserve compatibility. The project, plugin display name and installed directory use Apocalypter Weapons Pack. No binary patcher or companion helper DLL is required by this source build.

@@ -7,6 +7,7 @@ param(
  [string]$DevelopmentDll
 )
 $ErrorActionPreference='Stop'
+. (Join-Path $PSScriptRoot 'native-integration-result.ps1')
 $repo=(Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 $game=(Resolve-Path -LiteralPath $GameDir).Path
 $hostDir=Join-Path $repo 'artifacts/optional-integration-host'
@@ -48,18 +49,19 @@ if($LASTEXITCODE -ne 0){throw 'Optional integration checker compilation failed.'
 if(@(Get-ChildItem "$hostDir/BepInEx/plugins" -Filter '*.dll' -Recurse).Count -ne 1){throw 'Unexpected plugin in integration host.'}
 $executable=[IO.Path]::GetFullPath("$hostDir/Apocalypter-OptionalChecks.exe")
 foreach($variant in ($variants.Keys | Sort-Object)){
+ $report=Join-Path $hostDir "result-$variant.txt"
+ $engineLog=Join-Path $hostDir "engine-$variant.log"
+ $bepinexLog=Join-Path $hostDir 'BepInEx/LogOutput.log'
+ foreach($output in @($report,$engineLog,$bepinexLog)){if(Test-Path -LiteralPath $output){Remove-Item -LiteralPath $output -Force}}
  $started=[DateTime]::UtcNow
  $process=Start-Process -FilePath $executable -WorkingDirectory $hostDir -ArgumentList "-batchmode -nographics -logFile engine-$variant.log --optional-variant $variant" -WindowStyle Hidden -PassThru
- if(-not $process.WaitForExit(45000)){
-  $owned=Get-Process -Id $process.Id -ErrorAction SilentlyContinue
-  if($owned -and $owned.Path -eq $executable){Stop-Process -Id $owned.Id}
-  throw "Optional integration checker timed out: $variant"
+ try{
+  $result=Wait-NativeIntegrationResult -Process $process -ExecutablePath $executable -StartedUtc $started -ReportPath $report -LogPaths @($engineLog,$bepinexLog) -Label "$variant optional integration"
+ }finally{
+  if(Test-Path -LiteralPath $bepinexLog){Copy-Item -LiteralPath $bepinexLog -Destination "$hostDir/bepinex-$variant.log" -Force}
+  $process.Dispose()
  }
- $report=Join-Path $hostDir "result-$variant.txt"
- if(-not(Test-Path $report) -or (Get-Item $report).LastWriteTimeUtc -lt $started){throw "Missing fresh $variant report."}
- Copy-Item -LiteralPath "$hostDir/BepInEx/LogOutput.log" -Destination "$hostDir/bepinex-$variant.log" -Force
- Get-Content $report
- if(-not (Get-Content $report -Raw).StartsWith('PASS:')){throw "$variant optional integration checks failed."}
+ Write-Output $result
  if($variant -ne 'baseline' -and (Select-String -LiteralPath "$hostDir/bepinex-$variant.log" -Pattern '\[Error|\[Fatal|Could not find type named Apocaplayer|Could not find type named WildWasteland')){throw "Unexpected error or missing-type spam: $variant"}
 }
 Write-Output 'Native type/flag checks passed. Live weapon performance and full companion gameplay still require testing.'

@@ -8,7 +8,7 @@ namespace ChainsawPrototype {
    int job=maintenanceJob;maintenanceJob=(maintenanceJob+1)%11;
    long started=Stopwatch.GetTimestamp();
    switch(job){
-    case 0:InstallBodyHook();break;
+    case 0:InstallBodyHook();InstallPackHudCompatibility();InstallWeaponEquipCompatibility();InstallWeaponSettingsUi();InstallOptionalBloodEffects();break;
     case 1:CreateTemplate();break;
     case 2:TickChainsawPersistence();break;
     case 3:TickChainsawCodex();break;

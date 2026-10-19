@@ -10,7 +10,7 @@ namespace ChainsawPrototype {
   Preset LoadInstalled(string path){DateTime stamp=File.GetLastWriteTimeUtc(path);System.Tuple<DateTime,Preset> entry;if(!installedCache.TryGetValue(path,out entry)||entry.Item1!=stamp){entry=System.Tuple.Create(stamp,ReadPreset(path));installedCache[path]=entry;}return entry.Item2;}
   bool gameAttacking,applyingAttack;float attackTime;int nextAttack;Preset attackPreset;PoseKey forcedPose;ConfigEntry<bool> attackEnabled;string directory;Transform attackModel,attackRig,attackView;
   void SetupOwnedMovesets(){
-   directory=Path.Combine(BepInEx.Paths.ConfigPath,"WeaponMovesets");Directory.CreateDirectory(directory);
+   directory=Path.Combine(Path.GetDirectoryName(Info.Location),"Defaults","WeaponMovesets");
   }
   void CaptureAttackIdle(){RefreshAnimationRig();}
   static float AttackLength(Preset p){float total=Mathf.Clamp(p.returnSeconds,.02f,5f);foreach(var k in p.keys)total+=Mathf.Clamp(k.seconds,.02f,5f);return total;}

@@ -1,24 +1,37 @@
 # Changes
 
+## 1.6.3
+
+- Replace flamethrower aiming with RMB fuel spraying. LMB ignites connected fuel patches; burning ground damages enemies and applies ignite independently of the flame stream.
+- Add adjustable ignite damage: 10 damage per second initially, gaining 10 per second of flame contact up to 50. Burning expires ten seconds after the last contact.
+- Give ground fire varied animated flames and a configurable minimum burn time of 15 seconds.
+- Spread moving ignite flames across enemy bodies, including larger monsters and bosses, while avoiding helmet trophies and held equipment.
+- Let ending flames follow fallen corpses as they fade. Add optional smoke to enemies and ground fire, plus two seconds of smoke across freshly burnt corpses.
+- Give flame-killed corpses a charred appearance with muted red cracks and subtle surface detail, including corpses with later custom skin changes.
+- Make flame-killed harvestable corpses yield their corresponding cooked meat in the usual quantities. Preserve burnt appearance and cooked harvesting across saving.
+- Allow flamethrower hits through recognised vehicle window panes and on mounted enemy hitboxes. Metal frames, bodywork and windscreen grids remain solid cover.
+- Use the current shared blood effect for chainsaw hits on living enemies and corpses. Support optional BloodFX for both attacks, with standalone fallback; flame damage does not trigger its hit spray.
+- Add slight vibration during continuous chainsaw cutting and small metal sparks on metal surfaces, including car bodies and doors.
+- Increase both weapon tanks to 10 L. Preserve fuel amounts, fuel type, world spawn decisions and merchant stock across save/load.
+- Follow Wild Wasteland's optional smooth equip and weapon-switch movement with arms and models together, and show the correct weapon HUD images.
+- Add collapsible weapon settings and 0.1-step balance sliders within Apocasetter's normal settings panel.
+- Stop repeated warnings when the optional Inspector mod is absent.
+
 ## 1.6.2
 
-- Use shared time-based holding sway so running does not accelerate the added weapon bob; sample once per rendered frame.
-- Hide private weapon rigs when native weapon visibility or player health/death forbids them, including in late pose/render callbacks. Stop owned firing and shake on teardown.
-- Preserve authored holding profiles and attack data. Native fixture checks pass; the author confirmed the local sway/death fixes.
+- Keep weapon sway smooth while running.
+- Hide held weapons and stop their firing effects correctly on death.
 
 
-- Cache missing optional player-body types so equipping a weapon without Apocaplayer does not repeatedly scan every loaded type or flood the log. Late-loaded companion assemblies remain detectable. The author confirmed the local lag fix; native regression checks cover absent and late-loaded companion types.
+- Fix severe weapon lag and repeated warnings when the optional player-body mod is absent.
 
 ## 1.6.1
 
 - Restore Apocasetter's native settings rendering, scaling, search and detail tabs.
-- Initialize merchant request PlayMaker FSMs before assigning metadata on inactive objects.
-- Use real variable names and refreshed lookups for ItemName and SellValue.
-- Remove an unpublished request immediately if construction fails.
-- Prevent the reproduced null-FSM failure in Apocapocket 2.0.10's save-start scan.
+- Fix merchant requests that could cause errors in other mods or interrupt saving with Apocapocket.
 - Use exact flamethrower range defaults of 5 m, 7 m and 10 m. Round player-facing weapon balance settings to one decimal place, including fuel costs (0.1 L steps, minimum 0.1 L), on load and when edited. Chainsaw swing rate now defaults to 0.8 swings/second.
 
-The runtime includes the chainsaw and flamethrower. Other balance defaults, save identities, world chances and merchant prices remain unchanged. Authored grip, animation and presentation data retain their precision. This source tree restores the original release source and applies the hotfix; experimental local weapons are excluded.
+Other balance defaults, saved weapons, spawn chances and merchant prices remain unchanged.
 
 ## 1.6.0
 

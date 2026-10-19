@@ -35,11 +35,16 @@ namespace ChainsawPrototype {
    // final partial amount. Its funded damage remains valid on an empty tank.
    // Native Damage can destroy/detach the receiver immediately. Resolve its
    // surface identity before sending that event, while the collider is valid.
-   Transform actor;PlayMakerFSM actorReceiver;var surfaceKind=effects&&TryFlameEnemy(hit.collider,out actor,out actorReceiver)?ChainsawSurface.Flesh:ChainsawSurface.Other;
-   PlayMakerFSM receiver=null;for(var p=hit.collider.transform;p!=null;p=p.parent){receiver=p.GetComponents<PlayMakerFSM>().FirstOrDefault(f=>f.FsmName=="Bodypart"&&f.FsmVariables.FindFsmFloat("Damage")!=null);if(receiver!=null)break;}
-   bool damaged=receiver!=null;if(damaged){receiver.FsmVariables.FindFsmFloat("Damage").Value=-Mathf.Abs(damage);receiver.SendEvent("Damage");if(log)Logger.LogInfo("Chainsaw hit "+receiver.gameObject.name+" for "+damage);}
-   if(effects)StandardMeleeHit(hit.point,hit.normal,surfaceKind);
-   var body=hit.rigidbody;if(body!=null&&!body.isKinematic&&body.mass<100)body.AddForceAtPosition(camera.forward*impulse,hit.point,ForceMode.Impulse);
+   var contact=SolidMeleeContact.Read(hit.collider);var surfaceKind=MeleeSurface(hit.collider,contact.Flesh);
+   var receiver=contact.Receiver;var body=hit.rigidbody;
+   float healthBefore=contact.Health==null?0f:contact.Health.Value;
+   if(receiver!=null){string target=receiver.gameObject.name;receiver.FsmVariables.FindFsmFloat("Damage").Value=-Mathf.Abs(damage);receiver.SendEvent("Damage");if(log)Logger.LogInfo("Chainsaw hit "+target+" for "+damage);}
+   if(effects){
+    bool optional=contact.Flesh&&OptionalBloodEffects.SolidHit(contact.Actor,hit,contact.Dead);
+    if(optional){PlayStandardMeleeHitSound(hit.point,surfaceKind);if(contact.Health!=null)OptionalBloodEffects.NoteDamage(contact.Health,healthBefore-contact.Health.Value);}
+    else StandardMeleeHit(hit.point,hit.normal,surfaceKind);
+   }
+   if(body!=null&&!body.isKinematic&&body.mass<100)body.AddForceAtPosition(camera.forward*impulse,hit.point,ForceMode.Impulse);
   }
   void UpdateSawPresentation(){
    UpdateChainsawHitShake();

@@ -18,11 +18,13 @@ namespace ChainsawPrototype {
   readonly RaycastHit[] flameHitBuffer=new RaycastHit[48];
 
   void SetupFlameEffects(){SceneManager.sceneLoaded+=OnFlameSceneLoaded;}
-  void OnFlameSceneLoaded(Scene scene,LoadSceneMode mode){if(mode!=LoadSceneMode.Additive){StopFlameFiring();ClearFlameScorches();ClearFlameIgnition();ResetEmptyTankFeedback();guardedFuelWrites.Clear();}}
+  void OnFlameSceneLoaded(Scene scene,LoadSceneMode mode){if(mode!=LoadSceneMode.Additive){OptionalBloodEffects.Clear();StopFlameFiring();CleanupFlamethrowerIgnite();ClearFuelPatches();CleanupFireSmoke();ClearFlameScorches();ClearFlameIgnition();ResetEmptyTankFeedback();guardedFuelWrites.Clear();}}
 
   void TickFlameFiring(){
    bool controllable=Time.timeScale>0f&&!Cursor.visible&&!ActualThirdPersonActive();
    bool requested=controllable&&Input.GetMouseButton(0);
+   // LMB wins if both buttons are down: exactly one mode funds the tank.
+   TickFuelSpray(controllable&&!requested&&Input.GetMouseButton(1));
    if(!requested){
     if(controllable)QueueFlameDamage();else{flameDamagePending=false;flameDamageAccumulator=0f;}
     flameFiring=false;flameNextDamage=flameFundedSeconds=0f;return;
@@ -49,6 +51,8 @@ namespace ChainsawPrototype {
    flameDamageAccumulator=0f;flameDamagePending=true;
   }
   void StopFlameFiring(){
+   StopFuelSpray();
+   ResetFlamethrowerIgniteContacts();
    StopFlamethrowerMuzzleHeat();
    ResetFlamethrowerRecoil();
    flameFiring=false;flameDamagePending=false;flameNextDamage=flamePaidDamage=flameDamageAccumulator=flameFundedSeconds=0f;flameFuelFrame=-1;flameMuzzleModel=null;
@@ -188,11 +192,23 @@ namespace ChainsawPrototype {
    // horde LOS does not repeatedly inspect every intercepted bodypart. The
    // Health-owner check below also handles enemies moved to another layer.
    int mask=~(1<<2);if(enemiesPass)mask&=~(1<<10);
-   int count=radius>0f?Physics.SphereCastNonAlloc(origin,radius,direction,flameHitBuffer,distance,mask,QueryTriggerInteraction.Ignore):Physics.RaycastNonAlloc(origin,direction,flameHitBuffer,distance,mask,QueryTriggerInteraction.Ignore);
+   int count=radius>0f?Physics.SphereCastNonAlloc(origin,radius,direction,flameHitBuffer,distance,mask,QueryTriggerInteraction.Collide):Physics.RaycastNonAlloc(origin,direction,flameHitBuffer,distance,mask,QueryTriggerInteraction.Collide);
    var hits=flameHitBuffer;
    // A full unsorted buffer can omit the nearest wall in a crowded horde.
-   if(count==hits.Length){hits=radius>0f?Physics.SphereCastAll(origin,radius,direction,distance,mask,QueryTriggerInteraction.Ignore):Physics.RaycastAll(origin,direction,distance,mask,QueryTriggerInteraction.Ignore);count=hits.Length;}
-   RaycastHit? nearest=null;for(int i=0;i<count;i++){var hit=hits[i];if(OwnCollider(hit.collider))continue;Transform owner;PlayMakerFSM receiver;if(enemiesPass&&TryFlameEnemy(hit.collider,out owner,out receiver))continue;if(nearest==null||hit.distance<nearest.Value.distance)nearest=hit;}return nearest;
+   if(count==hits.Length){hits=radius>0f?Physics.SphereCastAll(origin,radius,direction,distance,mask,QueryTriggerInteraction.Collide):Physics.RaycastAll(origin,direction,distance,mask,QueryTriggerInteraction.Collide);count=hits.Length;}
+   RaycastHit? nearest=null;
+   for(int i=0;i<count;i++){
+    var hit=hits[i];if(OwnCollider(hit.collider)||FlameWindowPassage.PassThrough(hit.collider))continue;
+    Transform owner;PlayMakerFSM receiver;bool enemy=false;
+    if(hit.collider.isTrigger){
+     if(!QualifiedFlameTrigger(hit.collider))continue;
+     enemy=TryFlameEnemy(hit.collider,out owner,out receiver)&&receiver!=null;
+     if(!enemy)continue;
+    }
+    if(enemiesPass&&(enemy||TryFlameEnemy(hit.collider,out owner,out receiver)))continue;
+    if(nearest==null||hit.distance<nearest.Value.distance)nearest=hit;
+   }
+   return nearest;
   }
   void PrepareFlameMuzzle(){
    if(flameMuzzleReady)return;var points=flameMesh.vertices;float tip=flameMesh.bounds.max.z;Vector3 total=Vector3.zero;int count=0;
@@ -218,6 +234,7 @@ namespace ChainsawPrototype {
    var direction=blocked?view.forward:(target-origin).normalized;if(direction.sqrMagnitude<.5f)direction=view.forward;
    float distance=.02f;
    var contact=blocked?(obstruction??aimed):FlameTrajectoryCast(origin,direction,CurrentFlameRange,FlameTrajectory.NozzleRadius,out distance);
+   LateFuelSpray(origin,direction,distance,contact,blocked);
    // Keep the stream independent of inherited arm/model scale. Its origin comes
    // from the actual posed barrel renderer, not the provisional holding root.
    flameParticles.transform.SetPositionAndRotation(origin,Quaternion.LookRotation(direction,view.up));
@@ -230,11 +247,15 @@ namespace ChainsawPrototype {
    UpdateFlamethrowerMuzzleHeat(firing,blocked);
    UpdateFlamethrowerLighting(origin,direction,distance,firing,blocked);
    if(firing&&!blocked){if(!flameParticles.isEmitting)flameParticles.Play(true);}else if(flameParticles.isEmitting)flameParticles.Stop(true,blocked?ParticleSystemStopBehavior.StopEmittingAndClear:ParticleSystemStopBehavior.StopEmitting);
+   UpdateStreamSmoke(firing&&!blocked);
    UpdateFlamethrowerAudio(firing);
    // Visual fire follows continuous paid contact even at a low attack-tick
    // setting. Its own creation budget prevents render callbacks making trails.
-   if(firing&&!blocked&&contact!=null)PlaceFlameSurfaceFire(contact.Value);
+   if(firing&&!blocked&&contact!=null){PlaceFlameSurfaceFire(contact.Value);IgniteFuelAt(contact.Value.point,.15f,Time.time);}
    if(firing&&!blocked&&contact!=null&&flameFuelFrame==Time.frameCount)HeatFlameContainer(contact.Value.collider,flameFundedSeconds);
+   // Observe real, funded contact once per rendered frame. Damage intervals
+   // alone cannot establish where the stream pointed between their endpoints.
+   if(firing&&!blocked&&flameFuelFrame==Time.frameCount)IgniteFlameEnemies(origin,direction,distance,flameFundedSeconds);
    if(!flameDamagePending||Time.timeScale<=0f||ActualThirdPersonActive())return;flameDamagePending=false;
    if(!blocked)DamageFlameEnemies(origin,direction,distance);
    if(contact==null)return;var hit=contact.Value;DamageFlameReceiver(FlameDamageReceiver(hit.collider));
@@ -242,6 +263,7 @@ namespace ChainsawPrototype {
    PlaceFlameScorch(hit,nativeScorchAtlas);
   }
   void CleanupFlameEffects(){
+   CleanupFuelSpray();ClearFuelPatches();CleanupFireSmoke();
    CleanupFlamethrowerMuzzleHeat();CleanupFlamethrowerSurfaceFire();ClearFlameIgnition();
    StopFlameFiring();ClearFlameScorches();if(flameParticles!=null)Destroy(flameParticles.gameObject);if(flameContact!=null)Destroy(flameContact.gameObject);
    if(flameJetMaterial!=null)Destroy(flameJetMaterial);if(flamePilotMaterial!=null)Destroy(flamePilotMaterial);if(flameSmokeMaterial!=null)Destroy(flameSmokeMaterial);

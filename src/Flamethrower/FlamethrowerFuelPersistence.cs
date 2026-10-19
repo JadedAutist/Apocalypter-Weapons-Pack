@@ -2,11 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using System.Runtime.Serialization;
 using UnityEngine;
 using ES3Internal;
 namespace ChainsawPrototype {
- [Serializable] public sealed class FlamethrowerSavedFuel {public string reference,name;public float litres;public int kind;}
- [Serializable] public sealed class FlamethrowerFuelSave {public int version=1;public FlamethrowerSavedFuel[] tanks=new FlamethrowerSavedFuel[0];}
+ [Serializable,DataContract] public sealed class FlamethrowerSavedFuel {[DataMember] public string reference,name;[DataMember] public float litres;[DataMember] public int kind;}
+ [Serializable,DataContract] public sealed class FlamethrowerFuelSave {[DataMember] public int version=1;[DataMember] public FlamethrowerSavedFuel[] tanks=new FlamethrowerSavedFuel[0];}
  public partial class Plugin {
   const long FlamethrowerPrefabId=4708325016258697551L;
   const string FlamethrowerFuelSaveKey="ApocalypterWeaponsPack.FlamethrowerFuel";
@@ -38,11 +39,11 @@ namespace ChainsawPrototype {
     var manager=ES3ReferenceMgrBase.GetManagerFromScene(marker.gameObject.scene,true)??ES3ReferenceMgrBase.Current;
     saved.Add(new FlamethrowerSavedFuel{reference=manager==null?null:manager.Add(marker.gameObject).ToString(CultureInfo.InvariantCulture),name=marker.name,litres=tank.Litres,kind=(int)tank.Kind});
    }
-   ES3.Save<string>(FlamethrowerFuelSaveKey,JsonUtility.ToJson(new FlamethrowerFuelSave{tanks=saved.ToArray()}),settings);
+   ES3.Save<string>(FlamethrowerFuelSaveKey,WeaponSaveJson.Serialize(new FlamethrowerFuelSave{tanks=saved.ToArray()}),settings);
   }
   void LoadFlamethrowerFuel(ES3Settings settings){
    pendingFlameTanks.Clear();if(!ES3.KeyExists(FlamethrowerFuelSaveKey,settings))return;
-   var saved=JsonUtility.FromJson<FlamethrowerFuelSave>(ES3.Load<string>(FlamethrowerFuelSaveKey,settings));
+   var saved=WeaponSaveJson.Deserialize<FlamethrowerFuelSave>(ES3.Load<string>(FlamethrowerFuelSaveKey,settings));
    if(saved!=null&&saved.version==1&&saved.tanks!=null)pendingFlameTanks.AddRange(saved.tanks.Where(t=>t!=null));
   }
   void RestorePendingFlamethrowerFuel(){

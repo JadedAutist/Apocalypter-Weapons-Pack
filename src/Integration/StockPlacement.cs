@@ -26,6 +26,7 @@ namespace ChainsawPrototype {
     stockBones=map.OrderBy(p=>StockBoneDepth(p.Key)).ToArray();var models=preview.GetComponentsInChildren<MeshRenderer>(true);stockModels=(stockPlacement.models??new StockBone[0]).Select(p=>new KeyValuePair<Transform,StockBone>(models.FirstOrDefault(m=>m.name==p.name)?.transform,p)).Where(p=>p.Key!=null).ToArray();stockRig=weapon;Logger.LogInfo("Chainsaw stock placement bound: "+stockBones.Length+" bones and "+stockModels.Length+" models.");
    }
    Quaternion motion;Vector3 shift;GetChainsawPlacementMotion(out motion,out shift);stockMotion=motion;stockShift=shift;stockMotionReady=true;
+   Quaternion equipTurn;Vector3 equipShift;if(!ActualThirdPersonActive()&&TryPackEquipMotion(camera,out equipTurn,out equipShift)){motion=equipTurn*motion;shift=equipTurn*shift+equipShift;}
    foreach(var pair in stockBones){var pose=pair.Value;pair.Key.SetPositionAndRotation(shift+motion*camera.TransformPoint(pose.position),motion*camera.rotation*pose.rotation);}
    foreach(var pair in stockModels){var pose=pair.Value;var node=pair.Key;node.SetPositionAndRotation(shift+motion*camera.TransformPoint(pose.position),motion*camera.rotation*pose.rotation);if(pose.scale!=null){var parent=node.parent==null?Vector3.one:node.parent.lossyScale;node.localScale=new Vector3(pose.scale.x/Mathf.Max(.0001f,parent.x),pose.scale.y/Mathf.Max(.0001f,parent.y),pose.scale.z/Mathf.Max(.0001f,parent.z));}}
   }

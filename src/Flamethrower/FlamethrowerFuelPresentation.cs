@@ -12,7 +12,7 @@ namespace ChainsawPrototype {
   internal static string FlamethrowerFuelDetails(GameObject item){
    string details="Damage - "+FlamethrowerDamageFor(item).ToString("0.##",CultureInfo.InvariantCulture)+" / sec · Range - "+FlamethrowerRangeFor(item).ToString("0.##",CultureInfo.InvariantCulture)+" m";
    var fuel=item==null?null:item.GetComponentInChildren<ChainsawFuel>(true);
-   if(fuel!=null)details+="\n"+(fuel.Litres<=.00001f?"Tank empty":FlamethrowerFuelPolicy.Label(FlamethrowerKindFor(item)))+" - "+fuel.Litres.ToString("0.00",CultureInfo.InvariantCulture)+" / 5 L";
+   if(fuel!=null)details+="\n"+(fuel.Litres<=.00001f?"Tank empty":FlamethrowerFuelPolicy.Label(FlamethrowerKindFor(item)))+" - "+fuel.Litres.ToString("0.00",CultureInfo.InvariantCulture)+" / "+FlamethrowerFuelPolicy.Capacity.ToString("0",CultureInfo.InvariantCulture)+" L";
    return details;
   }
   internal static void UpdateFlamethrowerFuelLabel(GameObject item){

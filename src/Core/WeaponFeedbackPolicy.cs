@@ -6,7 +6,7 @@ namespace ChainsawPrototype {
    if(flesh)return ChainsawSurface.Flesh;
    string visual=(material??"").ToLowerInvariant();
    // Wheels, windows and upholstery can share a vehicle physics material.
-   if(Has(visual,"glass","rubber","tire","tyre","leather","plastic"))return ChainsawSurface.Other;
+   if(NonMetalMaterial(visual))return ChainsawSurface.Other;
    if(Has(visual,"wood","timber","plank"))return ChainsawSurface.Wood;
    if(Has(visual,"metal","rusted","rusty","rustang","rustchief","rustliner","rustcargo"))return ChainsawSurface.Metal;
    if(Has(visual,"sand","soil","ground","stone","concrete","rock","asphalt"))return ChainsawSurface.Ground;
@@ -20,6 +20,7 @@ namespace ChainsawPrototype {
    }
    return ChainsawSurface.Other;
   }
+  internal static bool NonMetalMaterial(string material){return Has((material??"").ToLowerInvariant(),"glass","rubber","tire","tyre","leather","plastic");}
   static bool Has(string text,params string[] words){foreach(string word in words)if(text.IndexOf(word,StringComparison.Ordinal)>=0)return true;return false;}
  }
  // An unsuccessful hold produces one cue, even if the weapon runs dry after

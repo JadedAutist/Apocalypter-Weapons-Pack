@@ -48,6 +48,7 @@ namespace ChainsawPrototype {
   internal Vector3 LocalImpact{get{return localImpact;}}
   internal bool Expired{get{return expired;}}
   ParticleSystem particles;ParticleSystemRenderer renderer;MaterialPropertyBlock properties;Color tint;bool expired;float opacityBoost,noisesBoost,emissive;Vector3 initialScale;
+  FlameFireSmoke smoke;
   static readonly int Colour=Shader.PropertyToID("_Color"),Tint=Shader.PropertyToID("_TintColor");
   static readonly int Opacity=Shader.PropertyToID("_Opacity_Boost"),Noises=Shader.PropertyToID("_NoisesOpacityBoost");
   static readonly int Emissive=Shader.PropertyToID("_EmissiveIntensity");
@@ -61,7 +62,7 @@ namespace ChainsawPrototype {
    transform.SetPositionAndRotation(surface.transform.TransformPoint(localImpact)+normal*.06f,Quaternion.LookRotation(normal));
   }
   internal void Touch(float now){if(!expired)lastContact=now;}
-  void LateUpdate(){if(!expired)FollowSurface();}
+  void LateUpdate(){if(!expired){FollowSurface();if(smoke==null&&renderer.enabled&&!ReferenceEquals(owner,null))smoke=owner.CreateFireSmoke(transform,FireSmokeKind.Ground);}}
   void Update(){
    if(expired)return;float age=Time.unscaledTime-born,idle=Time.unscaledTime-lastContact;
    if(surface==null||object.ReferenceEquals(owner,null)||!owner.FlameSurfaceFireEnabled||idle>=FlameHeatEnvelope.SurfaceFireSeconds){Expire();return;}
@@ -79,6 +80,6 @@ namespace ChainsawPrototype {
    // This shader uses procedural opacity, rather than the old atlas tint.
    properties.SetFloat(Opacity,opacityBoost*fade);properties.SetFloat(Noises,noisesBoost*fade);properties.SetFloat(Emissive,emissive*fade);renderer.SetPropertyBlock(properties);
   }
-  internal void Expire(){if(expired)return;expired=true;if(renderer!=null)renderer.enabled=false;if(particles!=null)particles.Stop(true,ParticleSystemStopBehavior.StopEmittingAndClear);Destroy(gameObject);}
+  internal void Expire(){if(expired)return;expired=true;if(smoke!=null)smoke.End(Time.time);if(renderer!=null)renderer.enabled=false;if(particles!=null)particles.Stop(true,ParticleSystemStopBehavior.StopEmittingAndClear);Destroy(gameObject);}
  }
 }

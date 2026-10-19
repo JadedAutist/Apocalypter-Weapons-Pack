@@ -1,5 +1,6 @@
 param([string]$GameDir=$env:APOCALYPTER_GAME_DIR,[string]$BaselineZip)
 $ErrorActionPreference='Stop'
+. (Join-Path $PSScriptRoot 'native-integration-result.ps1')
 $repo=(Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 if(-not $GameDir){throw 'Integration checks need -GameDir or APOCALYPTER_GAME_DIR.'}
 $game=(Resolve-Path -LiteralPath $GameDir).Path
@@ -39,17 +40,17 @@ if($LASTEXITCODE -ne 0){throw 'Integration checker compilation failed.'}
 if((Get-ChildItem -LiteralPath "$hostDir/BepInEx/plugins" -Recurse -Filter '*.dll').Count -ne 1){throw 'Unexpected plugin in isolated host. Inspect it before testing.'}
 $executable=[IO.Path]::GetFullPath((Join-Path $hostDir 'Apocalypter-MerchantChecks.exe'))
 foreach($variant in $variants){
+ $report=Join-Path $hostDir "result-$variant.txt"
+ $engineLog=Join-Path $hostDir "engine-$variant.log"
+ $bepinexLog=Join-Path $hostDir 'BepInEx/LogOutput.log'
+ foreach($output in @($report,$engineLog,$bepinexLog)){if(Test-Path -LiteralPath $output){Remove-Item -LiteralPath $output -Force}}
  $started=[DateTime]::UtcNow
  $process=Start-Process -FilePath $executable -WorkingDirectory $hostDir -ArgumentList "-batchmode -nographics -logFile engine-$variant.log --merchant-variant $variant" -WindowStyle Hidden -PassThru
- if(-not $process.WaitForExit(45000)){
-  $owned=Get-Process -Id $process.Id -ErrorAction SilentlyContinue
-  if($owned -and $owned.Path -eq $executable){Stop-Process -Id $owned.Id}
-  throw 'Integration checker timed out.'
+ try{
+  $result=Wait-NativeIntegrationResult -Process $process -ExecutablePath $executable -StartedUtc $started -ReportPath $report -LogPaths @($engineLog,$bepinexLog) -Label "$variant merchant integration"
+ }finally{
+  if(Test-Path -LiteralPath $bepinexLog){Copy-Item -LiteralPath $bepinexLog -Destination "$hostDir/bepinex-$variant.log" -Force}
+  $process.Dispose()
  }
- $report=Join-Path $hostDir "result-$variant.txt"
- if(-not(Test-Path -LiteralPath $report) -or (Get-Item -LiteralPath $report).LastWriteTimeUtc -lt $started){throw 'Fresh integration report missing.'}
- $result=Get-Content -LiteralPath $report -Raw
- Copy-Item -LiteralPath "$hostDir/BepInEx/LogOutput.log" -Destination "$hostDir/bepinex-$variant.log" -Force
  Write-Output $result
- if(-not $result.StartsWith('PASS:')){throw "$variant integration checks failed."}
 }

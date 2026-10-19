@@ -63,6 +63,9 @@ namespace ChainsawPrototype {
   }
 
   Mesh ProjectFlameScorch(Collider surface,Vector3 impact,Vector3 normal){
+   return ProjectFlameSurfacePatch(surface,impact,normal,.33f);
+  }
+  Mesh ProjectFlameSurfacePatch(Collider surface,Vector3 impact,Vector3 normal,float radius){
    var axis=Mathf.Abs(normal.y)<.9f?Vector3.up:Vector3.right;
    var tangent=Vector3.Cross(axis,normal).normalized;
    var bitangent=Vector3.Cross(normal,tangent).normalized;
@@ -70,7 +73,7 @@ namespace ChainsawPrototype {
    float angle=Mathf.Repeat(Mathf.Sin(Vector3.Dot(impact,new Vector3(12.9898f,78.233f,37.719f)))*43758.5453f,360f)*Mathf.Deg2Rad;
    var rotated=tangent*Mathf.Cos(angle)+bitangent*Mathf.Sin(angle);
    bitangent=Vector3.Cross(normal,rotated).normalized;tangent=rotated;
-   const float radius=.33f,projectionDepth=.24f,surfaceOffset=.004f;
+   const float projectionDepth=.24f,surfaceOffset=.004f;
    int vertexCount=FlameScorchGrid*FlameScorchGrid;
    var points=new Vector3[vertexCount];var uv=new Vector2[vertexCount];var colours=new Color[vertexCount];var supported=new bool[vertexCount];
    var worldPoints=new Vector3[vertexCount];var triangles=new List<int>((FlameScorchGrid-1)*(FlameScorchGrid-1)*6);

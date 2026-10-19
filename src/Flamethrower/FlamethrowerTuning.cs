@@ -3,13 +3,11 @@ using UnityEngine;
 namespace ChainsawPrototype {
  public partial class Plugin {
   ConfigEntry<float> flameOpacity,flameSaturation,flameSmokeTrail,flameParticleSize,flameSmokeAmount;
-  ConfigEntry<float> flameLightStrength,flameLightReach,flameVolume,flameAimInDuration,flameAimOutDuration;
+  ConfigEntry<float> flameLightStrength,flameLightReach,flameVolume;
   ConfigEntry<float> flameMuzzleGlowStrength;ConfigEntry<bool> flameSurfaceFire;
   void SetupFlamethrowerTuning(){
    flameMuzzleGlowStrength=FixedSetting("Flamethrower lighting","Muzzle glow strength",1f,new ConfigDescription("Muzzle metal heat glow: builds over 1.2 seconds of firing and cools over 2.5 seconds. 0 disables it.",new AcceptableValueRange<float>(0f,2f)));
    flameSurfaceFire=FixedSetting("Flamethrower appearance","Surface fire effects",true,"Small native animated flames on contacted surfaces. They stay lit during contact and fade completely within two seconds after contact stops. Visual only; no lingering damage.");
-   flameAimInDuration=FixedSetting("Flamethrower aiming","Aim in seconds",.25f,new ConfigDescription("Seconds to move into sights. Applies immediately to this weapon; native firearm timing is unchanged.",new AcceptableValueRange<float>(.05f,.8f)));
-   flameAimOutDuration=FixedSetting("Flamethrower aiming","Aim out seconds",.22f,new ConfigDescription("Seconds to return to the saved hip pose. Applies immediately to this weapon.",new AcceptableValueRange<float>(.05f,.8f)));
    flameOpacity=FixedSetting("Flamethrower appearance","Flame opacity",1f,new ConfigDescription("Opacity of the flame body and bright centre. Lower values make the stream more transparent.",new AcceptableValueRange<float>(.1f,1f)));
    flameSaturation=FixedSetting("Flamethrower appearance","Flame saturation",1f,new ConfigDescription("Orange saturation near the nozzle: 0 is gray, 1 is full orange. The stream darkens and grays as it travels.",new AcceptableValueRange<float>(0f,1f)));
    flameSmokeTrail=FixedSetting("Flamethrower appearance","Smoky tail strength",.7f,new ConfigDescription("Strength of the dark gray smoky backdrop behind the flames farther along the stream.",new AcceptableValueRange<float>(0f,1f)));

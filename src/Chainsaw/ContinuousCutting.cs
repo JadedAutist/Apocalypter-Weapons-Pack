@@ -55,8 +55,9 @@ namespace ChainsawPrototype {
   void ApplyCuttingPose(){
    if(cuttingBlend<=.0001f||camera==null||preview==null||left==null||right==null)return;
    float weight=cuttingBlend*cuttingBlend*(3f-2f*cuttingBlend);
-   var turn=camera.rotation*Quaternion.Euler(cuttingTilt.Value*weight,0,0)*Quaternion.Inverse(camera.rotation);
-   var shift=camera.TransformVector(new Vector3(0,.012f*weight,cuttingLean.Value*weight));
+   var vibration=ChainsawCuttingVibration.Sample(Time.timeAsDouble,cuttingHeld&&!gameAttacking&&Time.timeScale>0f?weight*ChainsawShakeMultiplier(true):0f);
+   var turn=camera.rotation*Quaternion.Euler(cuttingTilt.Value*weight+vibration.Pitch,vibration.Yaw,vibration.Roll)*Quaternion.Inverse(camera.rotation);
+   var shift=camera.TransformVector(new Vector3(vibration.X,.012f*weight+vibration.Y,cuttingLean.Value*weight+vibration.Z));
    var pivot=right.position;var model=preview.transform;
    model.SetPositionAndRotation(pivot+turn*(model.position-pivot)+shift,turn*model.rotation);
    left.SetPositionAndRotation(pivot+turn*(left.position-pivot)+shift,turn*left.rotation);

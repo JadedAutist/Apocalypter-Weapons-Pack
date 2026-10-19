@@ -57,19 +57,19 @@ namespace ChainsawPrototype {
   internal void ReportFlamethrowerHoldingError(Exception error){Logger.LogError("Flamethrower holding failure: "+error);}
 
   void ResetFlamePlacementBinding(){flamePlacementRig=null;flamePlacementBones=null;flamePlacementModels=null;flamePlacementReported=false;}
-  void ResetFlamethrowerHolding(){ResetFlamePlacementBinding();flameHoldingMotion.Reset();flameSwayReady=false;flameSwayFrame=-1;flameSwayPosition=Vector3.zero;flameSwayRotation=Quaternion.identity;ResetFlamethrowerAim();}
+  void ResetFlamethrowerHolding(){ResetFlamePlacementBinding();flameHoldingMotion.Reset();flameSwayReady=false;flameSwayFrame=-1;flameSwayPosition=Vector3.zero;flameSwayRotation=Quaternion.identity;}
 
   void ReadFlamethrowerHolding(){
    if(Time.unscaledTime<nextFlamePlacementRead)return;
    nextFlamePlacementRead=Time.unscaledTime+.25f;
-   string path=Path.Combine(Paths.ConfigPath,"HandArmPlacement","flamethrower.cfg");
+   string path=Path.Combine(Path.GetDirectoryName(Info.Location),"Defaults","HandArmPlacement","flamethrower.cfg");
    DateTime stamp=File.Exists(path)?File.GetLastWriteTimeUtc(path):DateTime.MinValue;
    if(stamp==flamePlacementStamp)return;
    flamePlacementStamp=stamp;
    flamePlacement=null;flamePlacementConfig=null;ResetFlamePlacementBinding();
    if(stamp==DateTime.MinValue)return;
-   // Read the committed runtime profile. Drafts and saved authoring presets
-   // stay under the adjuster's control; this reader never writes its config.
+   // Read only the approved release-owned profile. Shared authoring drafts
+   // cannot override this placement, and this reader never writes the bundle.
    var config=new ConfigFile(path,false);config.SaveOnConfigSet=false;
    config.Bind("Holding motion","Sway strength",1f);
    string json=config.Bind("Imported arm pose","Data","").Value;
@@ -143,11 +143,13 @@ namespace ChainsawPrototype {
   }
 
   internal void CompleteFlamethrowerHolding(FlamethrowerItem marker,FlamethrowerHoldingRunner controller){
+   CompleteFlamethrowerPose(marker,controller,true);
+  }
+  void CompleteFlamethrowerPose(FlamethrowerItem marker,FlamethrowerHoldingRunner controller,bool updateEffects){
    if(marker!=activeFlame||flamePlayer==null||marker.HoldingRig==null||marker.HoldingModel==null||!marker.Equipped||!marker.gameObject.activeInHierarchy)return;
    if(!CanPresentHeldWeapon(flamePlayer.transform)){StopFlamethrower();return;}
    ReadFlamethrowerHolding();controller.RestoreBaseline();
    var view=flamePlayer.transform;
-   SampleFlamethrowerAim();
    SampleFlamethrowerSway(view);
    float sway=Time.timeScale<=0f?0f:flamePlacementConfig==null?1f:flamePlacementConfig.Bind("Holding motion","Sway strength",1f).Value;
    sway=Finite(sway)?Mathf.Clamp01(sway):0f;
@@ -169,14 +171,14 @@ namespace ChainsawPrototype {
     foreach(var pair in flamePlacementModels){var pose=pair.Value;var node=pair.Key;if(node==null)continue;node.SetPositionAndRotation(point(pose),rotation(pose));if(pose.scale!=null)FlameWorldScale(node,new Vector3(pose.scale.x,pose.scale.y,pose.scale.z)*size);}
     if(!flamePlacementReported){flamePlacementReported=true;Logger.LogInfo("Weapons Pack applied committed flamethrower holding: "+flamePlacementSource+"; "+flamePlacementBones.Length+" private bones; "+flamePlacementModels.Length+" models.");}
    }
-   ApplyFlamethrowerAim(marker,view,motion,shift);
    ApplyFlamethrowerRecoil(marker,view);
+   Quaternion equipTurn;Vector3 equipShift;if(!ActualThirdPersonActive()&&TryPackEquipMotion(view,out equipTurn,out equipShift)){var rig=marker.HoldingRig;rig.SetPositionAndRotation(equipTurn*rig.position+equipShift,equipTurn*rig.rotation);}
    bool visible=!ActualThirdPersonActive();
    foreach(var arm in marker.HoldingRig.GetComponentsInChildren<SkinnedMeshRenderer>(true)){arm.enabled=visible;arm.updateWhenOffscreen=true;arm.localBounds=new Bounds(Vector3.zero,Vector3.one*6);}
    foreach(var model in marker.HoldingModel.GetComponentsInChildren<MeshRenderer>(true))model.enabled=visible;
    if(flameBodyArms!=null)flameBodyArms.enabled=false;
    SuppressFlameCarrier();
-   LateFlameEffects();
+   if(updateEffects)LateFlameEffects();
   }
  }
 }
