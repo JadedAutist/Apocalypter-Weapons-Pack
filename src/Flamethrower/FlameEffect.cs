@@ -21,7 +21,7 @@ namespace ChainsawPrototype {
   void OnFlameSceneLoaded(Scene scene,LoadSceneMode mode){if(mode!=LoadSceneMode.Additive){OptionalBloodEffects.Clear();StopFlameFiring();CleanupFlamethrowerIgnite();ClearFuelPatches();CleanupFireSmoke();ClearFlameScorches();ClearFlameIgnition();ResetEmptyTankFeedback();guardedFuelWrites.Clear();}}
 
   void TickFlameFiring(){
-   bool controllable=Time.timeScale>0f&&!Cursor.visible&&!ActualThirdPersonActive();
+   bool controllable=Time.timeScale>0f&&!Cursor.visible;
    bool requested=controllable&&Input.GetMouseButton(0);
    // LMB wins if both buttons are down: exactly one mode funds the tank.
    TickFuelSpray(controllable&&!requested&&Input.GetMouseButton(1));
@@ -243,7 +243,7 @@ namespace ChainsawPrototype {
    // larger settings cannot grow a short stream backward over the nozzle.
    ApplyFlameVisualTuning(distance);
    var noise=flameParticles.noise;var turbulence=noise.strength;turbulence.curveMultiplier=Mathf.Min(.06f,distance*.04f);noise.strength=turbulence;
-   bool firing=flameFiring&&Time.timeScale>0f&&!ActualThirdPersonActive();
+   bool firing=flameFiring&&Time.timeScale>0f;
    UpdateFlamethrowerMuzzleHeat(firing,blocked);
    UpdateFlamethrowerLighting(origin,direction,distance,firing,blocked);
    if(firing&&!blocked){if(!flameParticles.isEmitting)flameParticles.Play(true);}else if(flameParticles.isEmitting)flameParticles.Stop(true,blocked?ParticleSystemStopBehavior.StopEmittingAndClear:ParticleSystemStopBehavior.StopEmitting);
@@ -256,7 +256,7 @@ namespace ChainsawPrototype {
    // Observe real, funded contact once per rendered frame. Damage intervals
    // alone cannot establish where the stream pointed between their endpoints.
    if(firing&&!blocked&&flameFuelFrame==Time.frameCount)IgniteFlameEnemies(origin,direction,distance,flameFundedSeconds);
-   if(!flameDamagePending||Time.timeScale<=0f||ActualThirdPersonActive())return;flameDamagePending=false;
+   if(!flameDamagePending||Time.timeScale<=0f)return;flameDamagePending=false;
    if(!blocked)DamageFlameEnemies(origin,direction,distance);
    if(contact==null)return;var hit=contact.Value;DamageFlameReceiver(FlameDamageReceiver(hit.collider));
    EmitFlameContact(hit.point,hit.normal);
@@ -270,6 +270,8 @@ namespace ChainsawPrototype {
    if(nativeFlameAtlas!=null)Destroy(nativeFlameAtlas);if(nativeScorchAtlas!=null)Destroy(nativeScorchAtlas);if(nativeFirePuff!=null)Destroy(nativeFirePuff);if(nativeSmokeMask!=null)Destroy(nativeSmokeMask);
    CleanupFlamethrowerAudio();
   }
-  void OnDestroy(){SceneManager.sceneLoaded-=OnFlameSceneLoaded;ClearWeaponMerchantRequests();CleanupFlameEffects();CleanupChainsawHitShake();CleanupFlamethrowerCrosshair();CleanupEmptyTankFeedback();CleanupWeaponFeedbackRuntime();}
+  void OnDestroy(){CleanupThirdPerson();SceneManager.sceneLoaded-=OnFlameSceneLoaded;ClearWeaponMerchantRequests();CleanupFlameEffects();CleanupChainsawHitShake();CleanupFlamethrowerCrosshair();CleanupChainsawCrosshair();CleanupEmptyTankFeedback();CleanupWeaponFeedbackRuntime();}
  }
 }
+
+

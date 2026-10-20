@@ -25,43 +25,5 @@ namespace ChainsawPrototype {
     }
    }
   }
-  void InstallBodyHook(){if(bodyHook)return;var type=OptionalWeaponTypes.Find("Apocaplayer.Body");if(type==null)return;var method=AccessTools.Method(type,"LateFoot");if(method==null)return;harmony.Patch(method,postfix:new HarmonyMethod(typeof(Plugin),nameof(AfterBodyPose)));bodyHook=true;Logger.LogInfo("Third person Chainsaw prop hook installed.");}
-  static void AfterBodyPose(object __instance,object[] __args){if(ReferenceEquals(instance,null)||!instance.IsPlayerBody(__instance))return;if(instance.activeFlame!=null)instance.UpdateFlameBody(__instance);if(!instance.enabledPreview&&!instance.samplingThirdPerson){instance.lastBody=__instance;return;}instance.UpdateThirdPerson(__instance,__args);}
-  void HideThirdPerson(){if(thirdModel!=null)thirdModel.SetActive(false);if(suppressedProp!=null)suppressedProp.SetActive(true);suppressedProp=null;}
-  MonoBehaviour playerBodyRunner;System.Reflection.FieldInfo playerBodyField;float nextPlayerBodyScan;
-  bool IsPlayerBody(object body){
-   if(playerBodyRunner==null){
-    if(Time.unscaledTime<nextPlayerBodyScan)return false;nextPlayerBodyScan=Time.unscaledTime+1f;
-    var runnerType=OptionalWeaponTypes.Find("Apocaplayer.Runner");if(runnerType==null)return false;
-    playerBodyRunner=Resources.FindObjectsOfTypeAll<MonoBehaviour>().FirstOrDefault(m=>m.GetType()==runnerType&&m.gameObject.scene.IsValid());playerBodyField=AccessTools.Field(runnerType,"_body");
-   }
-   return playerBodyRunner!=null && playerBodyField!=null && ReferenceEquals(playerBodyField.GetValue(playerBodyRunner),body);
-  }
-  SkinnedMeshRenderer borrowedBodyArms;bool borrowedBodyArmsEnabled;
-  void RestoreBodyArms(){if(borrowedBodyArms!=null)borrowedBodyArms.enabled=borrowedBodyArmsEnabled;borrowedBodyArms=null;}
-  System.Reflection.FieldInfo thirdPersonOn,thirdPersonHasView;bool resolvedViewFields;
-  bool ActualThirdPersonActive(){
-   if(!resolvedViewFields){var type=OptionalWeaponTypes.Find("Apocaplayer.ThirdPerson");if(type!=null){thirdPersonOn=AccessTools.Field(type,"On");thirdPersonHasView=AccessTools.Field(type,"HasView");resolvedViewFields=true;}}
-   return thirdPersonOn!=null && (bool)thirdPersonOn.GetValue(null) && (thirdPersonHasView==null || (bool)thirdPersonHasView.GetValue(null));
-  }
-  object lastBody;bool samplingThirdPerson,playerThirdPerson;
-  void UpdateThirdPerson(object body,object[] args){
-   lastBody=body;
-   if(enabledPreview && !samplingThirdPerson){var bodyArms=AccessTools.Field(body.GetType(),"_fpArms").GetValue(body) as SkinnedMeshRenderer;if(bodyArms!=null){if(bodyArms!=borrowedBodyArms){RestoreBodyArms();borrowedBodyArms=bodyArms;borrowedBodyArmsEnabled=bodyArms.enabled;}bodyArms.enabled=false;}}
-   bool third=samplingThirdPerson || ActualThirdPersonActive();if(!samplingThirdPerson)playerThirdPerson=third;
-   if(enabledPreview && !samplingThirdPerson){if(preview!=null)preview.GetComponent<MeshRenderer>().enabled=!third;if(weapon!=null)foreach(var arm in weapon.GetComponentsInChildren<SkinnedMeshRenderer>(true))arm.enabled=!third;}
-   if(!enabledPreview || !third){HideThirdPerson();return;}
-   var t=body.GetType();var bones=AccessTools.Field(t,"Bones").GetValue(body) as IDictionary;var root=AccessTools.Field(t,"Root").GetValue(body) as GameObject;if(bones==null || root==null)return;
-   var rhName=AccessTools.Field(t,"RH").GetValue(null) as string;var lhName=AccessTools.Field(t,"LH").GetValue(null) as string;
-   var rh=bones[rhName] as Transform;var lh=bones[lhName] as Transform;if(rh==null||lh==null)return;
-   if(thirdModel==null || !ReferenceEquals(thirdOwner,body)){if(thirdModel!=null)Destroy(thirdModel);thirdModel=new GameObject("Chainsaw.ThirdPersonModel");thirdModel.AddComponent<MeshFilter>().sharedMesh=heldMesh;thirdModel.AddComponent<MeshRenderer>().sharedMaterial=chainsawMaterial;thirdOwner=body;}
-   var prop=AccessTools.Field(t,"_prop").GetValue(body) as GameObject;if(!samplingThirdPerson && prop!=null && prop!=thirdModel){suppressedProp=prop;prop.SetActive(false);}
-   Vector3 source=data.leftPosition-data.rightPosition,destination=lh.position-rh.position;
-   if(source.sqrMagnitude<.0001f||destination.sqrMagnitude<.0001f)return;
-   Quaternion alignment=Quaternion.LookRotation(destination,root.transform.up)*Quaternion.Inverse(Quaternion.LookRotation(source,Vector3.up));
-   Quaternion rotation=alignment*Quaternion.Euler(Values(thirdTurn));float scale=PreviewValue(poseScale);
-   thirdModel.transform.rotation=rotation;thirdModel.transform.localScale=Vector3.one*scale;
-   thirdModel.transform.position=rh.position+rh.TransformVector(Values(thirdMove))-rotation*(data.rightPosition*scale);thirdModel.SetActive(true);
-  }
  }
 }

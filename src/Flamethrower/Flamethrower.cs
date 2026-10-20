@@ -77,6 +77,7 @@ namespace ChainsawPrototype {
    foreach(var script in flameCarrierScripts)if(script!=null)script.enabled=false;
   }
   void StopFlamethrower(){
+   HideThirdPerson();RestoreBodyArms();
    StopFlameFiring();
    if(activeFlame!=null&&activeFlame.HoldingRig!=null)activeFlame.HoldingRig.gameObject.SetActive(false);
    ResetFlamethrowerHolding();

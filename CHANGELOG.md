@@ -1,5 +1,13 @@
 # Changes
 
+## 1.6.4
+
+- Show the chainsaw and flamethrower models in Wild Wasteland's third-person view.
+- Give the third-person chainsaw two-handed holding, melee movement, both LMB swings and continuous RMB cutting animations.
+- Prevent RMB zoom while using either weapon.
+- Align the chainsaw crosshair with the game's normal HUD placement and scaling.
+- Group settings under Weapons, Fuel and Smoke tabs, keeping collapsible weapon sections.
+
 ## 1.6.3
 
 - Replace flamethrower aiming with RMB fuel spraying. LMB ignites connected fuel patches; burning ground damages enemies and applies ignite independently of the flame stream.

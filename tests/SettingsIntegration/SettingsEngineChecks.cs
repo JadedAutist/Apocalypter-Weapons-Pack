@@ -23,7 +23,7 @@ public sealed class SettingsEngineChecks:BaseUnityPlugin {
  void Finish(Exception error){if(finished)return;finished=true;File.WriteAllText(Path.Combine(root,"result-"+variant+".txt"),(error==null?"PASS: "+checks+" native Apocasetter checks; rendered menu/physical clicking NOT VERIFIED.":"FAIL: "+error)+"\n");if(error!=null)Logger.LogError(error);Application.Quit();}
  void Awake(){
   root=Path.GetFullPath(Path.Combine(Path.GetDirectoryName(Info.Location),"../../.."));var args=Environment.GetCommandLineArgs();variant=args[Array.IndexOf(args,"--settings-variant")+1];
-  try{Prepare();CheckGroups();Finish(null);}catch(Exception e){Finish(e);}
+  try{Prepare();CheckGroups();CheckCompactTabs();Finish(null);}catch(Exception e){Finish(e);}
  }
  void Prepare(){
   // The checker exits before game startup and touches only inert fixture objects.
@@ -37,7 +37,7 @@ public sealed class SettingsEngineChecks:BaseUnityPlugin {
   Set(owner,"maintenanceJob",0);Set(owner,"nextMaintenance",-1f);Call(owner,"TickWeaponMaintenance");
   apocasetter=Assembly.LoadFrom(Path.Combine(root,"lib","Apocasetter.dll"));uiType=apocasetter.GetType("Apocasetter.SettingsUI",true);
   Set(apocasetter.GetType("Apocasetter.Plugin"),"Log",Logger);
-  Check((string)apocasetter.GetType("Apocasetter.Plugin").GetField("VERSION",All).GetRawConstantValue()=="2.1.1","actual Apocasetter 2.1.1 loaded");
+  var installedVersion=(string)apocasetter.GetType("Apocasetter.Plugin").GetField("VERSION",All).GetRawConstantValue();Check(!string.IsNullOrEmpty(installedVersion)&&uiType.GetMethod("DrawSectionTabs",All)!=null&&uiType.GetMethod("DrawSettings",All)!=null,"actual installed Apocasetter "+installedVersion+" native settings API loaded");
   Set(owner,"maintenanceJob",0);Set(owner,"nextMaintenance",-1f);Call(owner,"TickWeaponMaintenance");
   var patch=Harmony.GetPatchInfo(uiType.GetMethod("DrawSettings",All));
   Check(patch!=null&&patch.Owners.Contains("apocalypter.weaponspack.settings"),"production maintenance installs native weapon foldouts");
@@ -68,6 +68,22 @@ public sealed class SettingsEngineChecks:BaseUnityPlugin {
   ownConfig.Save();var reload=new ConfigFile(ownConfig.ConfigFilePath,false);Check(reload.Bind("Combat","Fuel per swing",9f).Value==.1f&&reload.Bind("Combat","Attack rate",9f).Value==.8f,"native saved config reload retains original keys and defaults");
   pending[entries[0]]="4.3";
  }
+ void CheckCompactTabs(){
+  var bridge=pack.GetType("ChainsawPrototype.PackSettingsUiBridge");
+  Check(bridge.GetMethod("PrepareTabs",All)!=null,"owned settings provide three compact category tabs");
+  ownConfig.Bind("Flamethrower - Smoke","Enemy smoke",true);
+  var original=ownConfig.Select(p=>p.Value).Where(e=>e.Definition.Key!="Apocasetter").ToList();var mod=MakeMod(ownConfig,"apocalypter.weaponspack",original);
+  Call(bridge,"PrepareTabs",ui,mod);
+  var tabs=(List<string>)Get(ui,"_sections");var sections=(List<KeyValuePair<string,List<ConfigEntryBase>>>)Get(ui,"_sectionEntries");
+  Check(tabs.SequenceEqual(new[]{"Weapons","Fuel","Smoke"}),"only Weapons Fuel and Smoke appear in the native tab strip");
+  Check(sections.SelectMany(p=>p.Value).Count()==original.Count&&original.All(e=>sections.Any(p=>p.Key==e.Definition.Section&&p.Value.Contains(e))),"compact tabs retain all entries and their original per-fuel section labels");
+  Check(!(bool)Call(bridge,"SectionDiffers","Combat","Weapons",mod)&&!(bool)Call(bridge,"SectionDiffers","Chainsaw cutting","Weapons",mod)&&!(bool)Call(bridge,"SectionDiffers","Flamethrower - Ignite","Weapons",mod),"Weapons selects attacks and ignite together");
+  Check(!(bool)Call(bridge,"SectionDiffers","Flamethrower - Gasoline","Fuel",mod)&&!(bool)Call(bridge,"SectionDiffers","Flamethrower - Diesel","Fuel",mod)&&!(bool)Call(bridge,"SectionDiffers","Flamethrower - Smoke","Smoke",mod),"fuel types and smoke select their short tabs");
+  Set(ui,"_section","Smoke");Call(bridge,"PrepareTabs",ui,mod);Check((string)Get(ui,"_section")=="Smoke","repeated rendering preserves the selected compact tab");
+  var before=Get(ui,"_sections");Call(bridge,"PrepareTabs",ui,foreignMod);Check(ReferenceEquals(before,Get(ui,"_sections"))&&(bool)Call(bridge,"SectionDiffers","Combat","Weapons",foreignMod),"foreign mods keep their original native section matching and cache");
+  Check(pending.Count==1&&pending[entries[0]]=="4.3","tab navigation preserves pending native setting edits");
+  var info=Harmony.GetPatchInfo(uiType.GetMethod("DrawSectionTabs",All));Check(info!=null&&info.Owners.Contains("apocalypter.weaponspack.settings"),"compact tabs are connected to the actual native tab renderer");
+ }
  void CheckGroups(){
   var type=pack.GetType("ChainsawPrototype.WeaponSettingsGroups");var groups=Activator.CreateInstance(type,true);int headerCount=0;
   var saw=entries.Where(e=>e.Definition.Section=="Combat").Cast<ConfigEntryBase>().ToList();var cut=entries.Where(e=>e.Definition.Section=="Chainsaw cutting").Cast<ConfigEntryBase>().ToList();
@@ -86,3 +102,4 @@ public sealed class SettingsEngineChecks:BaseUnityPlugin {
   Check(ownConfig.ContainsKey(new ConfigDefinition("Combat","Damage"))&&ownConfig.ContainsKey(new ConfigDefinition("Chainsaw cutting","Damage per hit")),"presentation preserves released config keys");
  }
 }
+

@@ -30,6 +30,7 @@ if($IncludeIntegration){
  & (Join-Path $repo 'tests/ProfileIndependence/RunnerTests.ps1') -GameDir $GameDir -CandidateDll $dll
  & (Join-Path $PSScriptRoot 'test-profile-independence.ps1') -GameDir $GameDir -CandidateDll $dll
  if($WildWastelandDll){
+  & (Join-Path $PSScriptRoot 'test-third-person.ps1') -GameDir $GameDir -CandidateDll $dll -WildWastelandDll $WildWastelandDll -RunName $runName
   & (Join-Path $PSScriptRoot 'test-equip-motion.ps1') -GameDir $GameDir -CandidateDll $dll -WildWastelandDll $WildWastelandDll -RunName ($runName+'-ww')
   & (Join-Path $PSScriptRoot 'test-solid-melee.ps1') -GameDir $GameDir -CandidateDll $dll -WildWastelandDll $WildWastelandDll -RunName ($runName+'-ww')
   & (Join-Path $PSScriptRoot 'test-flame-patrol.ps1') -GameDir $GameDir -CandidateDll $dll -WithWildWasteland -WildWastelandDll $WildWastelandDll -RunName ($runName+'-ww')

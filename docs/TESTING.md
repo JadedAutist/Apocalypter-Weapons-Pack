@@ -1,5 +1,33 @@
 # Verification
 
+## 1.6.4 release decision — author-approved exception, 2026-10-20
+
+**GO under the author's explicit 1.6.4 exception.** After successful usual-modded gameplay testing of the exact final package and the fresh log review, the author selected "Use the documented exception for 1.6.4." Clean-only gameplay and unavailable 4K testing remain **NOT VERIFIED**, waived as release gates for **1.6.4 only**. Neither is recorded as PASS, and the permanent policy is unchanged for future releases.
+
+The installable ZIP and all weapon code/assets retain their accepted identities. Only this release record and the source archive's documentation were refreshed. The minor separately invoked authoring-preview limitation and retained log warnings remain documented below. No known release-blocking weapon defect was identified in the accepted and automated scope. This is a scoped release decision, not a guarantee of universal compatibility. Nothing has been committed, pushed, tagged, uploaded or published; the exception does not authorize publication.
+
+The following sections preserve the preceding test evidence and earlier pending decisions; those holds are superseded only within this explicit exception's scope.
+
+## Final 1.6.4 package gameplay acceptance, 2026-10-20
+
+The author completed the requested final-package tests and reported "tests done, all seems to check out." The installed runtime matches the exact 1.6.4 ZIP, SHA-256 `959E0F93AE1AA37F6FA07D3B6512CEA3279E124EE5237E629CCC06AA456DB6BA`; all 27 runtime files retain their verified hashes. The requested scope was both weapons in first/third person, LMB/RMB, switching, death while equipped/attacking, recovery after reload, and Weapons/Fuel/Smoke settings. Record this as author-reported acceptance on the usual modded setup, not independent visual observation or a clean-install result.
+
+Fresh post-install BepInEx and Unity logs explicitly load Weapons Pack 1.6.4. They contain no Error/Fatal/exception/native-crash matches. Logs show world/menu/world transitions, weapon use, completed save/autosave and return to menu; no game process remained when inspected. Five pack audio-virtualization warnings remain with clips ready and nonzero volume. Existing optional lookups, a skipped older Wild Wasteland duplicate, a World Amp fog warning and one Apocasetter lost-click warning remain. The author reports the requested tests passed; the settings warning is retained without attributing its cause from the list of OnGUI scripts. Logs are not warning-free, and no warning was suppressed.
+
+The exact-package gameplay check is now author-accepted. Clean-only gameplay remains NOT VERIFIED and still needs a release decision; the prior 1.6.3-only waiver is not automatically extended. 4K remains NOT VERIFIED/unavailable. Other limitations and the minor authoring-preview issue remain as recorded below. No new weapon behavior or placement change was made after the accepted test, and nothing has been published. The following preparation section describes the earlier state before this final test.
+
+## 1.6.4 preparation, 2026-10-20
+
+Candidate DLL SHA-256: `CF3F70F548EFC977FDC317CC2A423DEDC61FBA944CEFEF7D5BD7503B39F123CE`. The author accepted the latest third-person chainsaw gameplay and confirmed the Weapons/Fuel/Smoke tabs, sliders and collapsible sections responded normally. That live acceptance covers the installed candidate labelled 1.6.3, SHA-256 `ED0ED75D1D545D297F2E6E619AE6D4402C1B8A08D6E4B83BFD1C3CB4A9BADC33`. The 1.6.4 binary has identical executable methods, fields, properties, assembly references and exception regions; only release identity metadata changed. This comparison does not establish exact-package gameplay acceptance.
+
+The new public build succeeds with six existing CS0649 warnings and zero errors. Fresh full `verify.ps1 -IncludeIntegration` passes, including 52 third-person, 36 native Apocasetter, 2,819 movement, 270 ignite and all existing merchant/holding/fuel/harvest/window/Patrol/HUD/melee suites. Isolated tests require fresh reports, clean native exits and no crash markers. They do not establish rendered animation quality or full-world lifecycle behavior.
+
+The retained usual-mod session uses Steam build 25832006, Unity 2020.3.49f1 and BepInEx 5.4.23.5. Logged companion versions include Wild Wasteland 1.0.4, Apocasetter 2.1.3 and Apocapocket 2.0.10. There are no Error/Fatal/exception/native-crash matches in the retained BepInEx/Unity logs. Existing optional lookup/duplicate-mod warnings and three pack virtual-audio diagnostics remain. One Apocasetter lost-click warning is retained; the author specifically confirmed settings responded normally. A list of other OnGUI scripts in that diagnostic does not identify a cause. Saving, return to menu and another load are visible in the logs; a complete final-package lifecycle test is not inferred.
+
+Current limitations: clean-only gameplay, exact 1.6.4 ZIP gameplay, full third-person death/respawn lifecycle and 4K settings remain NOT VERIFIED. The author previously reported 4K unavailable; the 1.6.3-only clean/4K release waiver is not carried forward automatically. A separately invoked authoring preview does not sample the new body-space pose from first person; there is no in-pack caller and normal gameplay is unaffected. A coroutine frame probe timed out without resuming, so actual successive-frame callback ownership was not established by that fixture. Private measured hierarchy fixtures remain outside this repository.
+
+Local archives and player-facing release notes are prepared separately. Publication requires the final checklist decision and explicit authorization; these records do not certify universal compatibility. Historical records below apply only to their stated versions and builds.
+
 Run build.ps1, verify.ps1 and package.ps1 as documented in BUILDING.md. Automated checks and the live checklist serve different purposes.
 
 ## Final 1.6.3 preparation, 2026-10-19

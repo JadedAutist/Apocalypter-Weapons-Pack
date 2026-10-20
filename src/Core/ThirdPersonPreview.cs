@@ -25,10 +25,10 @@ namespace ChainsawPrototype {
    thirdPreviewCamera.transform.position=center+root.transform.forward*2.6f+root.transform.right*1.7f+Vector3.up*.25f;thirdPreviewCamera.transform.LookAt(center,Vector3.up);thirdPreviewCamera.aspect=16f/9f;thirdPreviewCamera.targetTexture=thirdPreviewTexture;
    if(previewKey==null){var key=new GameObject("Chainsaw.PreviewKeyLight");previewKey=key.AddComponent<Light>();previewKey.type=LightType.Directional;previewKey.cullingMask=1<<31;previewKey.intensity=1.4f;previewKey.shadows=LightShadows.None;previewKey.enabled=false;var fill=new GameObject("Chainsaw.PreviewFillLight");previewFill=fill.AddComponent<Light>();previewFill.type=LightType.Directional;previewFill.cullingMask=1<<31;previewFill.intensity=.85f;previewFill.shadows=LightShadows.None;previewFill.enabled=false;}
    previewKey.transform.rotation=Quaternion.LookRotation(center-thirdPreviewCamera.transform.position,Vector3.up);previewFill.transform.rotation=Quaternion.LookRotation(-root.transform.right+Vector3.down*.3f,Vector3.up);
-   bool wasActive=thirdModel!=null&&thirdModel.activeSelf;int oldLayer=thirdModel!=null?thirdModel.layer:0;
+   bool wasActive=thirdModel!=null&&thirdModel.activeSelf;Transform[] layerNodes=null;int[] oldLayers=null;
    samplingPending=true;samplingThirdPerson=true;
-   try{UpdateThirdPerson(lastBody,new object[]{"ThirdPerson"});if(thirdModel==null)return;oldLayer=thirdModel.layer;thirdModel.layer=31;previewBody.SetActive(true);previewKey.enabled=true;previewFill.enabled=true;thirdPreviewCamera.Render();}
-   finally{if(previewKey!=null)previewKey.enabled=false;if(previewFill!=null)previewFill.enabled=false;samplingPending=false;samplingThirdPerson=false;previewBody.SetActive(false);if(thirdModel!=null){thirdModel.layer=oldLayer;thirdModel.SetActive(wasActive);}}
+   try{UpdateThirdPerson(lastBody,new object[]{"ThirdPerson"});if(thirdModel==null)return;layerNodes=thirdModel.GetComponentsInChildren<Transform>(true);oldLayers=new int[layerNodes.Length];for(int i=0;i<layerNodes.Length;i++){oldLayers[i]=layerNodes[i].gameObject.layer;layerNodes[i].gameObject.layer=31;}previewBody.SetActive(true);previewKey.enabled=true;previewFill.enabled=true;thirdPreviewCamera.Render();}
+   finally{if(previewKey!=null)previewKey.enabled=false;if(previewFill!=null)previewFill.enabled=false;samplingPending=false;samplingThirdPerson=false;previewBody.SetActive(false);if(layerNodes!=null)for(int i=0;i<layerNodes.Length;i++)if(layerNodes[i]!=null)layerNodes[i].gameObject.layer=oldLayers[i];if(thirdModel!=null)thirdModel.SetActive(wasActive);}
   }
  }
 }

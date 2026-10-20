@@ -1,4 +1,4 @@
-# Apocalypter Weapons Pack 1.6.3
+# Apocalypter Weapons Pack 1.6.4
 
 ![Apocalypter Weapons Pack](docs/images/header.png)
 
@@ -42,15 +42,19 @@ Burning fuel patches deal their fuel type's damage per second and apply ignite w
 
 ## Settings
 
+Wild Wasteland's third-person view shows each weapon's own model. The chainsaw uses two-handed holding and its own swing and continuous-cutting poses. RMB on either weapon retains the normal field of view.
+
 When Wild Wasteland's Smooth weapon switch setting is enabled, the chainsaw and flamethrower follow its first-person lowering and raising movement with their arms and models together. Wild Wasteland remains optional; disabling its feature retains the normal pack holding poses.
 
 Damage, range, fuel cost and attack rate are adjustable. Flamethrower settings are separate for each fuel. Fuel consumption per second equals fuel cost per attack multiplied by attack rate. Flame damage per second stays independent of attack rate. Spawn chances are fixed. Fire smoke can be disabled separately from flames and damage.
 
-In Apocasetter, the Chainsaw and Flamethrower headings can be collapsed. Searching reveals matching settings. Ignite has separate controls for damage per stack, maximum stacks, contact interval and burn duration. Under Flamethrower - Smoke, Enabled controls all pack fire smoke, with separate Burning enemies, Ground fire and Burnt corpses switches. Turning a switch off removes its active smoke; flames and damage continue. Corpse smoke spreads across the body for two seconds after death, then the remaining wisps fade.
+In Apocasetter, settings are grouped under Weapons, Fuel and Smoke tabs. The Chainsaw and Flamethrower headings can be collapsed. Searching reveals matching settings. Ignite has separate controls for damage per stack, maximum stacks, contact interval and burn duration. Under Flamethrower - Smoke, Enabled controls all pack fire smoke, with separate Burning enemies, Ground fire and Burnt corpses switches. Turning a switch off removes its active smoke; flames and damage continue. Corpse smoke spreads across the body for two seconds after death, then the remaining wisps fade.
 
 Player-facing balance settings use one decimal place, including fuel costs (0.1/0.2/0.3 L; minimum 0.1 L). Actual tank contents and continuous draining retain full precision. Existing saved values and new edits round to that precision. Flamethrower range defaults are exactly 5 m for gasoline, 7 m for diesel and 10 m for engine oil; chainsaw LMB defaults to 0.8 swings per second. Authored holding and animation profiles are unaffected.
 
 ## Release changes
+
+1.6.4 adds third-person weapon models and chainsaw holding and attack animations, prevents RMB zoom, aligns the chainsaw crosshair with the normal HUD, and groups settings into Weapons, Fuel and Smoke tabs.
 
 1.6.3 adds RMB fuel spraying, connected ground fires, stacking ignite damage, body-shaped flames, burnt corpses and cooked harvesting. Both tanks now hold 10 L. It improves chainsaw blood and metal impacts, adds collapsible settings, fixes flamethrower hits through vehicle panes, and supports Wild Wasteland's weapon icons and smooth equip movement. See CHANGELOG.md for the full changes.
 

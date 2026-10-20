@@ -8,7 +8,7 @@ namespace ChainsawPrototype {
   float flameCrosshairRetry;
 
   internal void UpdateFlamethrowerCrosshair(){
-   bool visible=activeFlame!=null&&activeFlame.Equipped&&activeFlame.gameObject.activeInHierarchy&&Time.timeScale>0f&&Cursor.lockState==CursorLockMode.Locked&&!Cursor.visible&&!ActualThirdPersonActive();
+   bool visible=activeFlame!=null&&activeFlame.Equipped&&activeFlame.gameObject.activeInHierarchy&&Time.timeScale>0f&&Cursor.lockState==CursorLockMode.Locked&&!Cursor.visible;
    if(flameNativeCrosshair==null&&Time.unscaledTime>=flameCrosshairRetry){
     flameCrosshairRetry=Time.unscaledTime+2f;
     flameNativeCrosshair=Resources.FindObjectsOfTypeAll<Graphic>().FirstOrDefault(g=>g.name=="MouseCrosshair"&&g.gameObject.scene.IsValid());
@@ -37,3 +37,4 @@ namespace ChainsawPrototype {
   void CleanupFlamethrowerCrosshair(){if(flameCrosshair!=null)Destroy(flameCrosshair.gameObject);flameCrosshair=null;flameNativeCrosshair=null;}
  }
 }
+

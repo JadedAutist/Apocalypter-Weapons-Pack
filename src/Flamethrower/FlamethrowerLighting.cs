@@ -60,7 +60,7 @@ namespace ChainsawPrototype {
   }
   void UpdateFlamethrowerLighting(Vector3 origin,Vector3 direction,float distance,bool firing,bool blocked){
    if(flameLight==null)return;
-   if(blocked||Time.timeScale<=0f||Cursor.visible||ActualThirdPersonActive()){StopFlamethrowerLighting();return;}
+   if(blocked||Time.timeScale<=0f||Cursor.visible){StopFlamethrowerLighting();return;}
    ReadNativeCanLightStyle();
    if(flameLightingFrame!=Time.frameCount){
     flameLightingFrame=Time.frameCount;
@@ -94,3 +94,4 @@ namespace ChainsawPrototype {
   }
  }
 }
+

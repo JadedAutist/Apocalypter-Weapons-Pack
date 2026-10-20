@@ -21,7 +21,7 @@ namespace ChainsawPrototype {
   }
   void StopFuelSpray(){fuelSpraying=false;fuelSprayLitres=0f;fuelSprayFrame=fuelSprayAppliedFrame=-1;if(fuelSprayParticles!=null)fuelSprayParticles.Stop(true,ParticleSystemStopBehavior.StopEmittingAndClear);}
   void LateFuelSpray(Vector3 origin,Vector3 direction,float distance,RaycastHit? contact,bool blocked){
-   bool spraying=fuelSpraying&&Time.timeScale>0f&&!Cursor.visible&&!ActualThirdPersonActive();
+   bool spraying=fuelSpraying&&Time.timeScale>0f&&!Cursor.visible;
    if(spraying&&fuelSprayParticles==null)CreateFuelSpray();
    if(fuelSprayParticles!=null){
     fuelSprayParticles.transform.SetPositionAndRotation(origin,Quaternion.LookRotation(direction));
@@ -47,3 +47,4 @@ namespace ChainsawPrototype {
   void CleanupFuelSpray(){StopFuelSpray();if(fuelSprayParticles!=null)Destroy(fuelSprayParticles.gameObject);fuelSprayParticles=null;if(fuelSprayMaterial!=null)Destroy(fuelSprayMaterial);fuelSprayMaterial=null;if(fuelDropTexture!=null)Destroy(fuelDropTexture);fuelDropTexture=null;}
  }
 }
+

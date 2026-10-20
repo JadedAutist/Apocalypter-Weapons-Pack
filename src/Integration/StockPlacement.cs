@@ -31,6 +31,6 @@ namespace ChainsawPrototype {
    foreach(var pair in stockModels){var pose=pair.Value;var node=pair.Key;node.SetPositionAndRotation(shift+motion*camera.TransformPoint(pose.position),motion*camera.rotation*pose.rotation);if(pose.scale!=null){var parent=node.parent==null?Vector3.one:node.parent.lossyScale;node.localScale=new Vector3(pose.scale.x/Mathf.Max(.0001f,parent.x),pose.scale.y/Mathf.Max(.0001f,parent.y),pose.scale.z/Mathf.Max(.0001f,parent.z));}}
   }
   static int StockBoneDepth(Transform t){int depth=0;while(t.parent!=null){depth++;t=t.parent;}return depth;}
-  void CompleteHoldingPose(){ApplyStockPlacement();var placement=HoldingPoseCompleted;if(placement!=null)placement();}
+  void CompleteHoldingPose(){ApplyStockPlacement();var placement=HoldingPoseCompleted;if(placement!=null)placement();RefreshThirdPersonAttackPose();}
  }
 }

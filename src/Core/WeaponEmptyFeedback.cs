@@ -13,7 +13,7 @@ namespace ChainsawPrototype {
   void TickEmptyTankFeedback(){
    UnityEngine.Object selected=enabledPreview?(UnityEngine.Object)lastHeldChain:activeFlame;
    if(selected==null){ResetEmptyTankFeedback();return;}
-   bool controllable=Time.timeScale>0f&&!Cursor.visible&&Cursor.lockState==CursorLockMode.Locked&&!ActualThirdPersonActive();
+   bool controllable=Time.timeScale>0f&&!Cursor.visible&&Cursor.lockState==CursorLockMode.Locked;
    if(!controllable){ResetEmptyTankFeedback();return;}
    if(emptyWeapon!=selected){ResetEmptyTankFeedback(selected);emptyWeapon=selected;}
    bool leftHeld=Mouse.current!=null&&Mouse.current.leftButton.isPressed;
@@ -56,3 +56,4 @@ namespace ChainsawPrototype {
   void CleanupEmptyTankFeedback(){ResetEmptyTankFeedback();if(emptyTankAudio!=null)Destroy(emptyTankAudio.gameObject);if(emptySawStarter!=null)Destroy(emptySawStarter);if(emptyFlameClick!=null)Destroy(emptyFlameClick);emptyTankAudio=null;emptySawStarter=emptyFlameClick=null;}
  }
 }
+

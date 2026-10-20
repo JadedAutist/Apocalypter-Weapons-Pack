@@ -16,7 +16,7 @@ namespace ChainsawPrototype {
    // LateUpdate and camera pre-cull rebuild the same saved pose. Observe the
    // firing edge and advance the recoil envelope only once in a rendered frame.
    if(flameRecoilFrame==Time.frameCount)return;flameRecoilFrame=Time.frameCount;
-   bool usable=activeFlame!=null&&activeFlame.Equipped&&activeFlame.gameObject.activeInHierarchy&&Time.timeScale>0f&&!Cursor.visible&&!ActualThirdPersonActive();
+   bool usable=activeFlame!=null&&activeFlame.Equipped&&activeFlame.gameObject.activeInHierarchy&&Time.timeScale>0f&&!Cursor.visible;
    if(!usable){flameRecoilWasFiring=flameRecoilActive=false;flameRecoilAmount=0f;return;}
    if(flameFiring&&!flameRecoilWasFiring){flameRecoilFrom=flameRecoilAmount;flameRecoilStart=Time.time;flameRecoilActive=true;}
    flameRecoilWasFiring=flameFiring;
@@ -41,3 +41,4 @@ namespace ChainsawPrototype {
   }
  }
 }
+

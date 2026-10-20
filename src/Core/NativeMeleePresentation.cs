@@ -6,7 +6,7 @@ using UnityEngine;
 using UnityEngine.UI;
 namespace ChainsawPrototype {
  public partial class Plugin {
-  AudioClip nativeSurfaceHit,nativeActorHit;int nativeActorLayer=-1;GameObject standardMeleeEffect,nativeActorEffect,crosshairCanvas;PlayMakerFSM nativeMeleeAttack;Image sawCrosshair;float nativeHitRetry;bool warnedNativeHit;
+  AudioClip nativeSurfaceHit,nativeActorHit;int nativeActorLayer=-1;GameObject standardMeleeEffect,nativeActorEffect;PlayMakerFSM nativeMeleeAttack;float nativeHitRetry;bool warnedNativeHit;
   bool nativeMeleeSourceBound,nativeSurfaceConfigured,nativeActorConfigured;
   void RefreshNativeMeleePrefabs(PlayMakerFSM attack){
    // Keep the small native source, not a permanent snapshot of its prefabs.
@@ -56,23 +56,6 @@ namespace ChainsawPrototype {
    var sound=actor?nativeActorHit:nativeSurfaceHit;if(sound==null)sound=nativeSurfaceHit??nativeActorHit??impactClip;
    if(sound!=null&&sawHit!=null){sawHit.transform.position=point;sawHit.pitch=UnityEngine.Random.Range(.9f,1.1f);sawHit.volume=1f;sawHit.PlayOneShot(sound,.9f);}
   }
-  void UpdateCrosshair(){
-   bool visible=enabledPreview&&Time.timeScale>0f&&Cursor.lockState==CursorLockMode.Locked;
-   if(visible&&crosshairCanvas==null){
-    var native=Resources.FindObjectsOfTypeAll<Graphic>().FirstOrDefault(i=>i.gameObject.name=="MouseCrosshair");
-    crosshairCanvas=new GameObject("Chainsaw.Crosshair",typeof(RectTransform),typeof(Canvas));var canvas=crosshairCanvas.GetComponent<Canvas>();canvas.renderMode=RenderMode.ScreenSpaceOverlay;canvas.sortingOrder=100;
-    var sourceImage=native as Image;var sourceRaw=native as RawImage;
-    var reticle=new GameObject("Chainsaw.NativeReticle",typeof(RectTransform),typeof(CanvasRenderer));reticle.transform.SetParent(crosshairCanvas.transform,false);
-    Graphic graphic;Vector2 size=new Vector2(4,4);
-    if(sourceImage!=null&&sourceImage.sprite!=null){sawCrosshair=reticle.AddComponent<Image>();sawCrosshair.sprite=sourceImage.sprite;sawCrosshair.preserveAspect=true;graphic=sawCrosshair;size=sourceImage.rectTransform.rect.size;}
-    else if(sourceRaw!=null&&sourceRaw.texture!=null){var raw=reticle.AddComponent<RawImage>();raw.texture=sourceRaw.texture;raw.uvRect=sourceRaw.uvRect;graphic=raw;size=sourceRaw.rectTransform.rect.size;}
-    else {sawCrosshair=reticle.AddComponent<Image>();graphic=sawCrosshair;}
-    // Native UI can be faded out while the rifle carrier is selected. Use an opaque reticle.
-    graphic.color=Color.white;graphic.raycastTarget=false;
-    var rect=reticle.GetComponent<RectTransform>();rect.anchorMin=rect.anchorMax=rect.pivot=new Vector2(.5f,.5f);rect.anchoredPosition=Vector2.zero;
-    rect.sizeDelta=new Vector2(Mathf.Clamp(size.x,3,48),Mathf.Clamp(size.y,3,48));
-   }
-   if(crosshairCanvas!=null)crosshairCanvas.SetActive(visible);
-  }
+
  }
 }

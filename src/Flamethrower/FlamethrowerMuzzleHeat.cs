@@ -5,7 +5,7 @@ namespace ChainsawPrototype {
   Mesh flameMuzzleHeatMesh;Material flameMuzzleHeatMaterial;MeshRenderer flameMuzzleHeatRenderer;
   Transform flameMuzzleHeatTarget;float flameMuzzleHeat;int flameMuzzleHeatFrame=-1;
   void UpdateFlamethrowerMuzzleHeat(bool firing,bool blocked){
-   if(Time.timeScale<=0f||Cursor.visible||ActualThirdPersonActive()){StopFlamethrowerMuzzleHeat();return;}
+   if(Time.timeScale<=0f||Cursor.visible){StopFlamethrowerMuzzleHeat();return;}
    if(flameMuzzleHeatFrame!=Time.frameCount){flameMuzzleHeatFrame=Time.frameCount;flameMuzzleHeat=FlameHeatEnvelope.Step(flameMuzzleHeat,firing&&!blocked,Time.unscaledDeltaTime);}
    float strength=FlameTuningValue(flameMuzzleGlowStrength,1f,0f,2f);
    if(flameMuzzleHeat<=.001f||strength<=.001f){if(flameMuzzleHeatRenderer!=null)flameMuzzleHeatRenderer.enabled=false;return;}
@@ -39,3 +39,4 @@ namespace ChainsawPrototype {
   }
  }
 }
+
